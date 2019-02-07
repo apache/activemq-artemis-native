@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.activemq.artemis.jlibaio.test;
+package org.apache.activemq.artemis.nativo.jlibaio.test;
 
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.activemq.artemis.jlibaio.LibaioContext;
-import org.apache.activemq.artemis.jlibaio.LibaioFile;
-import org.apache.activemq.artemis.jlibaio.SubmitInfo;
+import org.apache.activemq.artemis.nativo.jlibaio.LibaioContext;
+import org.apache.activemq.artemis.nativo.jlibaio.LibaioFile;
+import org.apache.activemq.artemis.nativo.jlibaio.SubmitInfo;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Rule;

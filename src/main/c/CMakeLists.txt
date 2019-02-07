@@ -64,7 +64,7 @@ INCLUDE_DIRECTORIES(. ${JNI_INCLUDE_DIRS})
 
 ADD_CUSTOM_COMMAND(
     OUTPUT org_apache_activemq_artemis_jlibaio_LibaioContext.h
-    COMMAND javah -cp ../java/ org.apache.activemq.artemis.jlibaio.LibaioContext
+    COMMAND javah -cp ../java/ org.apache.activemq.artemis.nativo.jlibaio.LibaioContext
     DEPENDS ../java/org/apache/activemq/artemis/jlibaio/LibaioContext.java
 )
 

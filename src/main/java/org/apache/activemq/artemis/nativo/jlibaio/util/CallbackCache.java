@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.activemq.artemis.jlibaio.util;
+package org.apache.activemq.artemis.nativo.jlibaio.util;
 
-import org.apache.activemq.artemis.jlibaio.SubmitInfo;
+import org.apache.activemq.artemis.nativo.jlibaio.SubmitInfo;
 
 /**
  * this is an utility class where you can reuse Callback objects for your LibaioContext usage.

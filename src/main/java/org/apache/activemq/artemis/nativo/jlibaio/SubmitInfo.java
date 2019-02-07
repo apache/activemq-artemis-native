@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-/**
- * This packages handles Linux libaio at a low level.
- * <br>
- * Buffers needs to be specially allocated by {@link org.apache.activemq.artemis.jlibaio.LibaioContext#newAlignedBuffer(int, int)}
- * as they need to be aligned to 512 or 4096 when using Direct files.
- */
-package org.apache.activemq.artemis.jlibaio;
+package org.apache.activemq.artemis.nativo.jlibaio;
+
+public interface SubmitInfo {
+
+   void onError(int errno, String message);
+
+   void done();
+}
