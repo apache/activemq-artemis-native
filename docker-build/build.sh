@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+
+echo hello
+
+cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="-m32" -DARTEMIS_CROSS_COMPILE=On -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
+make

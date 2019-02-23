@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <limits.h>
-#include "org_apache_activemq_artemis_jlibaio_LibaioContext.h"
+#include "org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h"
 #include "exception_helper.h"
 
 struct io_control {
@@ -201,7 +201,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
             return JNI_ERR;
         }
 
-        submitClass = (*env)->FindClass(env, "org/apache/activemq/artemis/jlibaio/SubmitInfo");
+        submitClass = (*env)->FindClass(env, "org/apache/activemq/artemis/nativo/jlibaio/SubmitInfo");
         if (submitClass == NULL) {
            return JNI_ERR;
         }
@@ -218,13 +218,13 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
            return JNI_ERR;
         }
 
-        libaioContextClass = (*env)->FindClass(env, "org/apache/activemq/artemis/jlibaio/LibaioContext");
+        libaioContextClass = (*env)->FindClass(env, "org/apache/activemq/artemis/nativo/jlibaio/LibaioContext");
         if (libaioContextClass == NULL) {
            return JNI_ERR;
         }
         libaioContextClass = (jclass)(*env)->NewGlobalRef(env, (jobject)libaioContextClass);
 
-        libaioContextDone = (*env)->GetMethodID(env, libaioContextClass, "done", "(Lorg/apache/activemq/artemis/jlibaio/SubmitInfo;)V");
+        libaioContextDone = (*env)->GetMethodID(env, libaioContextClass, "done", "(Lorg/apache/activemq/artemis/nativo/jlibaio/SubmitInfo;)V");
         if (libaioContextDone == NULL) {
            return JNI_ERR;
         }
@@ -277,7 +277,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved) {
     }
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_shutdownHook
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_shutdownHook
   (JNIEnv * env, jclass clazz) {
     closeDumbHandlers();
 }
@@ -355,7 +355,7 @@ static inline void * getBuffer(JNIEnv* env, jobject pointer) {
     return (*env)->GetDirectBufferAddress(env, pointer);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_lock
+JNIEXPORT jboolean JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_lock
   (JNIEnv * env, jclass  clazz, jint handle) {
     return flock(handle, LOCK_EX | LOCK_NB) == 0;
 }
@@ -396,7 +396,7 @@ static inline void iocb_destroy(struct io_control * theControl) {
 /**
  * Everything that is allocated here will be freed at deleteContext when the class is unloaded.
  */
-JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_newContext(JNIEnv* env, jobject thisObject, jint queueSize) {
+JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_newContext(JNIEnv* env, jobject thisObject, jint queueSize) {
     int i = 0;
 
     #ifdef DEBUG
@@ -487,7 +487,7 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext
     return (*env)->NewDirectByteBuffer(env, theControl, sizeof(struct io_control));
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_deleteContext(JNIEnv* env, jclass clazz, jobject contextPointer) {
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_deleteContext(JNIEnv* env, jclass clazz, jobject contextPointer) {
     int i;
     struct io_control * theControl = getIOControl(env, contextPointer);
     if (theControl == NULL) {
@@ -533,13 +533,13 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_de
     free(theControl);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_close(JNIEnv* env, jclass clazz, jint fd) {
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_close(JNIEnv* env, jclass clazz, jint fd) {
    if (close(fd) < 0) {
        throwIOExceptionErrorNo(env, "Error closing file:", errno);
    }
 }
 
-JNIEXPORT int JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_open(JNIEnv* env, jclass clazz,
+JNIEXPORT int JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_open(JNIEnv* env, jclass clazz,
                         jstring path, jboolean direct) {
     const char* f_path = (*env)->GetStringUTFChars(env, path, 0);
 
@@ -559,7 +559,7 @@ JNIEXPORT int JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_ope
     return res;
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_submitWrite
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_submitWrite
   (JNIEnv * env, jclass clazz, jint fileHandle, jobject contextPointer, jlong position, jint size, jobject bufferWrite, jobject callback) {
     struct io_control * theControl = getIOControl(env, contextPointer);
     if (theControl == NULL) {
@@ -588,7 +588,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_su
     submit(env, theControl, iocb);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_submitRead
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_submitRead
   (JNIEnv * env, jclass clazz, jint fileHandle, jobject contextPointer, jlong position, jint size, jobject bufferRead, jobject callback) {
     struct io_control * theControl = getIOControl(env, contextPointer);
     if (theControl == NULL) {
@@ -613,7 +613,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_su
     submit(env, theControl, iocb);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_blockedPoll
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_blockedPoll
   (JNIEnv * env, jobject thisObject, jobject contextPointer, jboolean useFdatasync) {
 
     #ifdef DEBUG
@@ -717,7 +717,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_bl
 
 }
 
-JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_poll
+JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_poll
   (JNIEnv * env, jobject obj, jobject contextPointer, jobjectArray callbacks, jint min, jint max) {
     int i = 0;
     struct io_control * theControl = getIOControl(env, contextPointer);
@@ -762,7 +762,7 @@ JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_po
     return retVal;
 }
 
-JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_newAlignedBuffer
+JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_newAlignedBuffer
 (JNIEnv * env, jclass clazz, jint size, jint alignment) {
     if (size % alignment != 0) {
         throwRuntimeException(env, "Buffer size needs to be aligned to passed argument");
@@ -785,7 +785,7 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext
     return (*env)->NewDirectByteBuffer(env, buffer, size);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_freeBuffer
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_freeBuffer
   (JNIEnv * env, jclass clazz, jobject jbuffer) {
     if (jbuffer == NULL)
     {
@@ -798,14 +798,14 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_fr
 
 
 /** It does nothing... just return true to make sure it has all the binary dependencies */
-JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_getNativeVersion
+JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_getNativeVersion
   (JNIEnv * env, jclass clazz)
 
 {
-     return org_apache_activemq_artemis_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION;
+     return org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION;
 }
 
-JNIEXPORT jlong JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_getSize
+JNIEXPORT jlong JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_getSize
   (JNIEnv * env, jclass clazz, jint fd)
 {
     struct stat statBuffer;
@@ -818,7 +818,7 @@ JNIEXPORT jlong JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_g
     return statBuffer.st_size;
 }
 
-JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_getBlockSizeFD
+JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_getBlockSizeFD
   (JNIEnv * env, jclass clazz, jint fd)
 {
     struct stat statBuffer;
@@ -831,7 +831,7 @@ JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_ge
     return statBuffer.st_blksize;
 }
 
-JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_getBlockSize
+JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_getBlockSize
   (JNIEnv * env, jclass clazz, jstring path)
 {
     const char* f_path = (*env)->GetStringUTFChars(env, path, 0);
@@ -848,7 +848,7 @@ JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_ge
     return statBuffer.st_blksize;
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_fallocate
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_fallocate
   (JNIEnv * env, jclass clazz, jint fd, jlong size)
 {
     if (fallocate(fd, 0, 0, (off_t) size) < 0)
@@ -859,7 +859,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_fa
     lseek (fd, 0, SEEK_SET);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_fill
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_fill
   (JNIEnv * env, jclass clazz, jint fd, jint alignment, jlong size)
 {
 
@@ -901,7 +901,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_fi
     lseek (fd, 0, SEEK_SET);
 }
 
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_jlibaio_LibaioContext_memsetBuffer
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_memsetBuffer
   (JNIEnv *env, jclass clazz, jobject jbuffer, jint size)
 {
     #ifdef DEBUG
