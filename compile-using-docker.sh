@@ -15,21 +15,29 @@
 # specific language governing permissions and limitations
 # under the License.
 
-## 64 bits build
-#docker image rm artemis-native-builder -f
-docker build -f ./docker-build/Dockerfile-ubuntu -t artemis-native-builder .
+docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . 
+docker run -v $PWD/bin:/work/bin artemis-native-builder "$@"
+chown -Rv $USER:$GID ./bin
 
 # Note: You may need to authorize docker to map folder at your folder structure
-docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash ./compile-native.sh
+#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
+
+
+## 64 bits build
+#docker image rm artemis-native-builder -f
+#docker build -f ./docker-build/Dockerfile-ubuntu -t artemis-native-builder .
+
+# Note: You may need to authorize docker to map folder at your folder structure
+#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash ./compile-native.sh
 
 ## if you need to debug compilation
 #docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
 
 #docker image rm artemis-native-builder-32 -f
-docker build -f ./docker-build/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
+#docker build -f ./docker-build/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
 
 # Note: You may need to authorize docker to map folder at your folder structure
-docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder-32 bash ./compile-native.sh
+#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder-32 bash ./compile-native.sh
 
 ## if you need to debug compilation
 #docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder-32 bash

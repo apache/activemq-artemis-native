@@ -29,6 +29,8 @@ RUN apt-get update
 #RUN apt-get install -qq -y libaio-devel
 
 RUN apt-get install -qq -y bash
+
+#vim is useful for eventual debugging inside the image
 RUN apt-get install -qq -y cmake make vim
 RUN apt-get install -qq -y g++
 RUN apt-get install -qq -y libaio1

@@ -41,6 +41,7 @@
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
         <jb.logmanager.version>2.0.3.Final</jb.logmanager.version>
 
+        <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <version.org.jacoco>0.7.9</version.org.jacoco>
         <version.org.jacoco.plugin>0.7.9</version.org.jacoco.plugin>
         <version.maven.jar.plugin>2.4</version.maven.jar.plugin>
@@ -839,6 +840,27 @@
                                 </resource>
                             </resources>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven.assembly.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>source</id>
+                        <configuration>
+                            <descriptor>src/main/assembly/source.xml</descriptor>
+                            <tarLongFileMode>gnu</tarLongFileMode>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
