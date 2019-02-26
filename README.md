@@ -46,8 +46,14 @@ This is the project information:
 Git Repository:  git://git.kernel.org/pub/scm/libs/libaio/libaio.git
 Mailing List:    linux-aio@kvack.org
 
+## Steps to build (via Docker)
 
-## Steps to build
+From the project base directory, run:
+
+```docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . && docker run -v $PWD/target/bin:/work/bin artemis-native-builder && sudo chown -Rv $USER:$GID target/bin```
+
+
+## Steps to build (manual)
 
 1. Make sure you have JAVA_HOME defined, and pointing to the root of your JDK:
 
