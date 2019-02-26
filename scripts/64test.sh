@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -5,9 +6,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -15,10 +16,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# This will compile both 32 and 64 bits version
+# This will generate a 32bit image for testing and start the shell
 
-cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="-m32" -DARTEMIS_CROSS_COMPILE=On -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
-make
-rm -rf CMakeCache.txt cmake_install.cmake
-cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="" -DARTEMIS_CROSS_COMPILE=Off -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
-make
+docker build -f docker-build/Dockerfile-centos -t artemis-native-builder .
+
+# This is mapping your maven repository inside the image to avoid you downloading the internet again
+docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder ./mvnw test
+
+# you could use it this way
+#docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder bash

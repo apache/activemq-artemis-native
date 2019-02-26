@@ -16,7 +16,7 @@
 # under the License.
 
 docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . 
-docker run -v $PWD/bin:/work/bin artemis-native-builder "$@"
+docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
 
 # Note: You may need to authorize docker to map folder at your folder structure

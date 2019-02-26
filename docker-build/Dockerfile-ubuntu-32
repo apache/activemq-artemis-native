@@ -35,6 +35,7 @@ ADD . /work
 
 # Expose some outstanding folders
 VOLUME ["/work/bin"]
+#VOLUME ["/root/.m2/repository"]
 WORKDIR /work
 
 CMD ["RUN"]

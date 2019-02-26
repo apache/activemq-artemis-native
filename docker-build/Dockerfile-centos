@@ -32,6 +32,8 @@ ADD . /work
 WORKDIR /work
 
 VOLUME ["/work/bin"]
+VOLUME ["/root/.m2/repository"]
+
 WORKDIR /work
 
-CMD [ "sh", "-c", "/work/compile-native.sh"]
+CMD [ "sh", "-c", "/work/scripts/compile-native.sh"]
