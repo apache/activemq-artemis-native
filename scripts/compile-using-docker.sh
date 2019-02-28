@@ -15,12 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
+rm -rf ./bin/*so
 docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . 
 docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
 
 # Note: You may need to authorize docker to map folder at your folder structure
-#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
+#docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
 
 
 ## 64 bits build

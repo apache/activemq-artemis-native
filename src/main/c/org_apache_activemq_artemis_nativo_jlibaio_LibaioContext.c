@@ -63,12 +63,17 @@ struct io_control {
 };
 
 //These should be used to check if the user-space io_getevents is supported:
-//Linux ABI for the ring buffer: https://elixir.bootlin.com/linux/latest/source/fs/aio.c#L54
-//aio_read_events_ring: https://elixir.bootlin.com/linux/latest/source/fs/aio.c#L1148
+//Linux ABI for the ring buffer: https://elixir.bootlin.com/linux/v4.20.13/source/fs/aio.c#L54
+//aio_read_events_ring: https://elixir.bootlin.com/linux/v4.20.13/source/fs/aio.c#L1148
+
+// NOTE: if the kernel ever updates the structure, the RING-MAGIC will change and the code will switch back to normal IO calls
 #define AIO_RING_MAGIC	0xa10a10a1
 #define AIO_RING_INCOMPAT_FEATURES	0
 
 
+/** There is no defined aio_ring anywhere in an include,
+    This is an implementation detail, that is a binary contract.
+    it is safe to use the feature though. */
 struct aio_ring {
 	unsigned	id;	/* kernel internal index number */
 	unsigned	nr;	/* number of io_events */
@@ -84,16 +89,20 @@ struct aio_ring {
 	struct io_event		io_events[0];
 }; /* 128 bytes + ring size */
 
+// Check if the implementation supports AIO_RING by checking this number directly.
 static inline int has_usable_ring(struct aio_ring *ring) {
     return ring->magic == AIO_RING_MAGIC && ring->incompat_features == AIO_RING_INCOMPAT_FEATURES;
 }
 
+// Newer versions of the kernel (newer here being a relative word, a couple years already at the time
+// I am writing this), will have io_context_t as an opaque type, and the real type being the aio_ring.
 static inline struct aio_ring* to_aio_ring(io_context_t aio_ctx) {
     return (struct aio_ring*) aio_ctx;
 }
 
 //It implements a user space batch read io events implementation that attempts to read io avoiding any sys calls
-static int artemis_io_getevents(io_context_t aio_ctx, long min_nr, long max,
+// This implementation will look at the internal structure (aio_ring) and move along the memory result
+static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
                                                        struct io_event *events, struct timespec *timeout) {
     struct aio_ring *ring = to_aio_ring(aio_ctx);
     //checks if it could be completed in user space, saving a sys call
@@ -138,6 +147,10 @@ static int artemis_io_getevents(io_context_t aio_ctx, long min_nr, long max,
             #endif
             return available_nr;
         }
+    } else {
+        #ifdef DEBUG
+            fprintf(stdout, "The kernel is not supoprting the ring buffer any longer\n");
+        #endif
     }
     int sys_call_events = io_getevents(aio_ctx, min_nr, max, events, timeout);
     #ifdef DEBUG
@@ -616,7 +629,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
     pthread_mutex_unlock(&(theControl->pollLock));
 
     // To return any pending IOCBs
-    int result = artemis_io_getevents(theControl->ioContext, 0, 1, theControl->events, 0);
+    int result = ringio_get_events(theControl->ioContext, 0, 1, theControl->events, 0);
     for (i = 0; i < result; i++) {
         struct io_event * event = &(theControl->events[i]);
         struct iocb * iocbp = event->obj;
@@ -738,7 +751,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
 
     while (running) {
 
-        int result = artemis_io_getevents(theControl->ioContext, 1, max, theControl->events, 0);
+        int result = ringio_get_events(theControl->ioContext, 1, max, theControl->events, 0);
 
         if (result == -EINTR)
         {
@@ -829,7 +842,7 @@ JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
     }
 
 
-    int result = artemis_io_getevents(theControl->ioContext, min, max, theControl->events, 0);
+    int result = ringio_get_events(theControl->ioContext, min, max, theControl->events, 0);
     int retVal = result;
 
     for (i = 0; i < result; i++) {
