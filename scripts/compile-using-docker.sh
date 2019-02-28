@@ -15,10 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-rm -rf ./bin/*so
+if [ -d "./bin" ]; then rm -Rf ./bin; fi
+mkdir bin
+echo I am on $PWD
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
-docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
+docker run --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
+ls -liat ./bin
 
 # Note: You may need to authorize docker to map folder at your folder structure
 #docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
