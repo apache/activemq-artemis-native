@@ -18,10 +18,10 @@
 
 # This will generate a 32bit image for testing and start the shell
 
-docker build -f docker-build/Dockerfile-centos -t artemis-native-builder .
+docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 
 # This is mapping your maven repository inside the image to avoid you downloading the internet again
 docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder ./mvnw test
 
 # you could use it this way
-#docker build -f docker-build/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder bash
+#docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder bash

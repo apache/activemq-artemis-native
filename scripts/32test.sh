@@ -18,7 +18,7 @@
 
 # This will generate a 32bit image for testing and start the shell
 
-docker build -f docker-build/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
+docker build -f src/main/docker/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
 # This is mapping your maven repository inside the image to avoid you downloading the internet again
 docker run -it --rm -v $PWD/bin:/work/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder-32 ./mvnw test
 
