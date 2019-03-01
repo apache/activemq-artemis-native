@@ -11,10 +11,6 @@ You will of course need docker installed and running for this:
 MyComputer activemq-artemis-native myuser$ ./scripts/compile-using-docker.sh
 ```
 
-* Increase LibaioContext.EXPECTED_NATIVE_VERSION
-
-This is to make sure when the system loads a native, it is the same .so generated at the release time, avoiding production issues on mismatched .so.
-
 * Build the release locally: mvn clean install -Prelease
 
 ## Key to Sign the Release
@@ -62,13 +58,13 @@ This should be the same `user.email` and `user.name` you use on your main reposi
 You will have to use this following maven command to perform the release:
 
 ```sh
-mvn clean release:prepare -DautoVersionSubmodules=true -Prelease
+mvn clean release:prepare -DautoVersionSubmodules=true -Prelease -Pdocker
 ```
 
 You could optionally set `pushChanges=false` so the version commit and tag won't be pushed upstream (you would have to do it yourself):
 
 ```sh
-mvn clean release:prepare -DautoVersionSubmodules=true -DpushChanges=false -Prelease
+mvn clean release:prepare -DautoVersionSubmodules=true -DpushChanges=false -Prelease -Pdocker
 ```
 
 When prompted make sure the next is a major release. Example:
@@ -99,7 +95,7 @@ git push upstream <version>
 To upload it to nexus, perform this command:
 
 ```sh
-mvn release:perform -Prelease
+mvn release:perform -Prelease -Pdocker
 ```
 
 Note: this can take quite awhile depending on the speed for your Internet connection.
