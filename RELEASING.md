@@ -11,6 +11,10 @@ You will of course need docker installed and running for this:
 MyComputer activemq-artemis-native myuser$ ./scripts/compile-using-docker.sh
 ```
 
+* Increase LibaioContext.EXPECTED_NATIVE_VERSION
+
+This is to make sure when the system loads a native, it is the same .so generated at the release time, avoiding production issues on mismatched .so.
+
 * Build the release locally: mvn clean install -Prelease
 
 ## Key to Sign the Release

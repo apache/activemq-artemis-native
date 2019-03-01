@@ -45,11 +45,9 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
    private static final AtomicLong totalMaxIO = new AtomicLong(0);
 
    /**
-    * This definition needs to match Version.h on the native sources.
-    * <br>
-    * Or else the native module won't be loaded because of version mismatches
+    * The Native layer will look at this version.
     */
-   private static final int EXPECTED_NATIVE_VERSION = 8;
+   private static final int EXPECTED_NATIVE_VERSION = 9;
 
    private static boolean loaded = false;
 
