@@ -8,7 +8,34 @@ with AIO journal.
 The lib AIO is a Linux-specific dependency, therefore having a relatively modern Linux operating system is assumed for
 the purpose of this documentation.
 
-## Dependencies
+There are two ways to build the native libraries:
+
+- Using a Docker Image created during the build phase
+- Bare Metal
+
+## Docker
+
+The only requirement needed for this compilation option is Docker.
+
+The required image will be downloaded by Docker when you build it.
+
+You can use the script ./compile-using-docker.sh and the correct image and script should be called.
+
+```bash
+$ ./scripts/copmile-using-docker.sh
+```
+
+
+Or you could also using the -Pdocker profile on maven:
+
+
+```bash
+$ mvn install -Pdocker
+
+```
+
+
+## Bare Metal Dependencies
 
 In order to build the package, make sure you install these packages:
 
@@ -36,6 +63,22 @@ Once again using Fedora Linux as an example, it would mean that the following pa
 - glibc-devel.i686
 - libaio-devel.i686
 
+
+### Scripts on Bare Metal
+
+You can use the compile-native.sh script. This script is using cross compilation towards 64 bits and 32 bits from a Linux environment.
+
+```bash
+$ ./scripts/compile-native.sh
+```
+
+
+Or you can use the bare-metal profile
+
+```bash
+$ mvn install -Pbare-metal
+```
+
 ## Lib AIO Information
 
 The Lib AIO is the Linux' Kernel Asynchronous I/O Support Library. It is part of the kernel project. The library makes
@@ -59,7 +102,7 @@ From the project base directory, run:
 
 Example:
 
-```export JAVA_HOME=/usr/share/jdk1.7```
+```export JAVA_HOME=/usr/share/jdk1.8```
 
 
 2. Call compile-native.sh. Bootstrap will call all the initial scripts you need
@@ -70,8 +113,7 @@ if you are missing any dependencies, autoconf would tell you what you're missing
 
 ### Compiled File
 
-The produced file will be under the ./target/nar (example: ./target/nar/artemis-native-1.0.0-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/libartemis-native-1.0.0.so)
-and you will have to rename it manually under ./bin following the appropriate pattern.
+The generated jar will include the ./lib/
 
 ### Advanced Compilation Methods and Developer-specific Documentation
 
