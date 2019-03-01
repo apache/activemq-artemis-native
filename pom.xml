@@ -66,6 +66,33 @@
         <testFailureIgnore>true</testFailureIgnore>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis-native.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis-native.git</developerConnection>
+        <url>https://fisheye6.atlassian.com/browse/~br=master/activemq-artemis-git</url>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <!-- this needs to match a server in your settings.xml with upload settings -->
+            <id>activemq-website</id>
+            <!-- set the staging.siteURL in your ~/.m2/settings.xml in a release or other profile -->
+            <url>${staging.siteURL}/maven/${project.version}</url>
+            <!--<url>${site-repo-url}</url>-->
+        </site>
+        <snapshotRepository>
+            <id>apache.snapshots.https</id>
+            <name>Apache Development Snapshot Repository</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.apache.org/jira/browse/ARTEMIS</url>
+    </issueManagement>
+
     <dependencies>
         <!-- ## Test Dependencies ## Note: Junit is required in certain module tests.  We should control versions from here. -->
         <dependency>
