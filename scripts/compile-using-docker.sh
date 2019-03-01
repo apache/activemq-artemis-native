@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,7 +18,6 @@
 
 if [ -d "./bin" ]; then rm -Rf ./bin; fi
 mkdir bin
-echo I am on $PWD
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 docker run --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
