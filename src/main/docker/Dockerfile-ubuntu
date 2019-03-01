@@ -40,7 +40,7 @@ RUN groupadd -g 1001 -r artemis && useradd -r -u 1001 -g artemis artemis
 ADD . /work
 
 # Expose some outstanding folders
-VOLUME ["/work/bin"]
+VOLUME ["/work/target/bin"]
 WORKDIR /work
 
 CMD ["RUN"]

@@ -50,7 +50,7 @@ Mailing List:    linux-aio@kvack.org
 
 From the project base directory, run:
 
-```docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -v $PWD/target/bin:/work/bin artemis-native-builder && sudo chown -Rv $USER:$GID target/bin```
+```docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -v $PWD/target/bin:/work/target/bin artemis-native-builder && sudo chown -Rv $USER:$GID target/bin```
 
 
 ## Steps to build (manual)

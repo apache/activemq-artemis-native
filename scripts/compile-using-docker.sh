@@ -19,12 +19,12 @@
 if [ -d "./bin" ]; then rm -Rf ./bin; fi
 mkdir bin
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
-docker run --rm -v $PWD/bin:/work/bin artemis-native-builder "$@"
+docker run --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
 ls -liat ./bin
 
 # Note: You may need to authorize docker to map folder at your folder structure
-#docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
+#docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder bash
 
 
 ## 64 bits build
@@ -32,16 +32,16 @@ ls -liat ./bin
 #docker build -f ./src/main/docker/Dockerfile-ubuntu -t artemis-native-builder .
 
 # Note: You may need to authorize docker to map folder at your folder structure
-#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash ./compile-native.sh
+#docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder bash ./compile-native.sh
 
 ## if you need to debug compilation
-#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder bash
+#docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder bash
 
 #docker image rm artemis-native-builder-32 -f
 #docker build -f ./src/main/docker/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
 
 # Note: You may need to authorize docker to map folder at your folder structure
-#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder-32 bash ./compile-native.sh
+#docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder-32 bash ./compile-native.sh
 
 ## if you need to debug compilation
-#docker run -it --rm -v $PWD/bin:/work/bin artemis-native-builder-32 bash
+#docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder-32 bash
