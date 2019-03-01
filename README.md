@@ -19,10 +19,10 @@ The only requirement needed for this compilation option is Docker.
 
 The required image will be downloaded by Docker when you build it.
 
-You can use the script ./compile-using-docker.sh and the correct image and script should be called.
+You can use the script ./scripts/compile-using-docker.sh and the correct image and script should be called.
 
 ```bash
-$ ./scripts/copmile-using-docker.sh
+$ ./scripts/compile-using-docker.sh
 ```
 
 
@@ -66,7 +66,7 @@ Once again using Fedora Linux as an example, it would mean that the following pa
 
 ### Scripts on Bare Metal
 
-You can use the compile-native.sh script. This script is using cross compilation towards 64 bits and 32 bits from a Linux environment.
+You can use the ./scripts/compile-native.sh script. This script is using cross compilation towards 64 bits and 32 bits from a Linux environment.
 
 ```bash
 $ ./scripts/compile-native.sh
