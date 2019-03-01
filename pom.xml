@@ -52,7 +52,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <activemq-surefire-argline>
-            -Djava.library.path="${activemq.basedir}/bin"
+            -Djava.library.path="${activemq.basedir}/target/bin"
         </activemq-surefire-argline>
         <activemq.basedir>${project.basedir}</activemq.basedir>
         <skipLicenseCheck>true</skipLicenseCheck>
