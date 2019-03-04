@@ -22,7 +22,7 @@ FROM centos:6 as builder-env
 LABEL maintainer="Apache ActiveMQ Team"
 
 RUN yum groupinstall -y "Development Tools" && \
-	yum install -y cmake libaio libaio.i686 libaio-devel libaio-devel.i686 glibc-devel.i686 \
+	yum install -y vim cmake libaio libaio.i686 libaio-devel libaio-devel.i686 glibc-devel.i686 \
 		libgcc.i686 java-1.8.0-openjdk-devel && yum clean all
 
 FROM builder-env as builder

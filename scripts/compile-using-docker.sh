@@ -17,11 +17,10 @@
 # under the License.
 
 if [ -d "./bin" ]; then rm -Rf ./bin; fi
-mkdir bin
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 docker run --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
-ls -liat ./bin
+ls -liat ./target/bin
 
 # Note: You may need to authorize docker to map folder at your folder structure
 #docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/target/bin:/work/target/bin artemis-native-builder bash
