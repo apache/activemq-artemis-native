@@ -31,7 +31,7 @@ ADD . /work
 
 WORKDIR /work
 
-VOLUME ["/work/target/bin"]
+VOLUME ["/work/target/lib"]
 VOLUME ["/root/.m2/repository"]
 
 WORKDIR /work

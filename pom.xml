@@ -52,7 +52,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <activemq-surefire-argline>
-            -Djava.library.path="${activemq.basedir}/target/bin"
+            -Djava.library.path="${activemq.basedir}/target/lib/linux-${os.arch}"
         </activemq-surefire-argline>
         <activemq.basedir>${project.basedir}</activemq.basedir>
         <skipLicenseCheck>true</skipLicenseCheck>
@@ -368,7 +368,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-resources-32</id>
+                        <id>copy-resources-i686</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -377,7 +377,7 @@
                             <outputDirectory>${basedir}/target/output/lib/linux-i686/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>target/bin/</directory>
+                                    <directory>target/lib/linux-i686</directory>
                                     <includes>
                                         <include>libartemis-native-32.so</include>
                                     </includes>
@@ -386,7 +386,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-resources-64</id>
+                        <id>copy-resources-x86_64</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -395,7 +395,61 @@
                             <outputDirectory>${basedir}/target/output/lib/linux-x86_64/</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>target/bin/</directory>
+                                    <directory>target/lib/linux-amd64</directory>
+                                    <includes>
+                                        <include>libartemis-native-64.so</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-aarch64</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/output/lib/linux-aarch64/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>target/lib/linux-aarch64</directory>
+                                    <includes>
+                                        <include>libartemis-native-64.so</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-ppc64le</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/output/lib/linux-ppc64le/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>target/lib/linux-ppc64le</directory>
+                                    <includes>
+                                        <include>libartemis-native-64.so</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-s390x</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/output/lib/linux-s390x/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>target/lib/linux-s390x</directory>
                                     <includes>
                                         <include>libartemis-native-64.so</include>
                                     </includes>

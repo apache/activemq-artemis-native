@@ -40,6 +40,11 @@ set(ARTEMIS_LIB_NAME artemis-native-64)
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(ARTEMIS_LIB_NAME artemis-native-32)
 endif()
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+    set(ARTEMIS_LIB_DIR lib/linux-amd64)
+else()
+    set(ARTEMIS_LIB_DIR lib/linux-${CMAKE_SYSTEM_PROCESSOR})
+endif()
 
 set(ARTEMIS_CROSS_COMPILE OFF CACHE BOOL "Cross-compile the native library")
 
@@ -51,6 +56,9 @@ if (ARTEMIS_CROSS_COMPILE)
     message(STATUS "Using cross-compilation")
     set(ARTEMIS_CROSS_COMPILE_ROOT_PATH /usr/lib)
     set(ARTEMIS_LIB_NAME artemis-native-32)
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+        set(ARTEMIS_LIB_DIR lib/linux-i686)
+    endif()
 
     # The Cmake variable CMAKE_FIND_ROOT_PATH cannot be set via CLI, so we have to use a separate variable and then
     # set it to that value. We use ARTEMIS_CROSS_COMPILE_ROOT_PATH for that.
@@ -73,6 +81,6 @@ ADD_LIBRARY(artemis-native SHARED org_apache_activemq_artemis_nativo_jlibaio_Lib
 target_link_libraries(artemis-native ${LIBAIO_LIB})
 
 set_target_properties(artemis-native PROPERTIES
-              LIBRARY_OUTPUT_DIRECTORY ../../../target/bin
+              LIBRARY_OUTPUT_DIRECTORY ../../../target/${ARTEMIS_LIB_DIR}
               LIBRARY_OUTPUT_NAME ${ARTEMIS_LIB_NAME})
 message(STATUS "Setting up library as ${ARTEMIS_LIB_NAME} based on current architecture")

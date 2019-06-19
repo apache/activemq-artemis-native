@@ -1,7 +1,7 @@
 **/*.iml
 **/nb-configuration.xml
 **/target
-**/bin
+**/lib/linux-*
 **/obj
 .idea/
 ratReport.txt
