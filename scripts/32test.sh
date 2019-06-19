@@ -20,7 +20,7 @@
 
 docker build -f src/main/docker/Dockerfile-ubuntu-32 -t artemis-native-builder-32 .
 # This is mapping your maven repository inside the image to avoid you downloading the internet again
-docker run -it --rm -v $PWD/target/bin:/work/target/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder-32 ./mvnw test
+docker run -it --rm -v $PWD/target/lib:/work/target/lib -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder-32 ./mvnw test
 
 # you could use it this way
-#docker run -it --rm -v $PWD/target/bin:/work/target/bin -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder-64 bash
+#docker run -it --rm -v $PWD/target/lib:/work/target/lib -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder-64 bash
