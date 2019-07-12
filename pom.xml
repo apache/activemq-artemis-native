@@ -350,6 +350,12 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>3.0.0</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <!-- Adding Bundle-NativeCode to allow loading library from bundle. The asterisk at the end is important, so bundle resolves also without a matching library, e.g. on Windows. -->
+                        <Bundle-NativeCode>lib/linux-i686/libartemis-native-32.so; osname=Linux; processor=x86, lib/linux-x86_64/libartemis-native-64.so; osname=Linux; processor=x86-64, *</Bundle-NativeCode>
+                    </instructions>
+                </configuration>
             </plugin>
 
             <plugin>
