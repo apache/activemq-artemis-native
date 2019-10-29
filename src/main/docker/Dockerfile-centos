@@ -17,7 +17,7 @@
 
 # ActiveMQ Artemis
 
-FROM centos:7 as builder-env
+FROM centos:stream8 as builder-env
 
 LABEL maintainer="Apache ActiveMQ Team"
 
