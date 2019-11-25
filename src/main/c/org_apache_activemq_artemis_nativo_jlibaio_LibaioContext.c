@@ -56,9 +56,8 @@ struct io_control {
     // a reusable pool of iocb
     struct iocb ** iocb;
     int queueSize;
-    int iocbPut;
-    int iocbGet;
-    int used;
+    //struct iocb* available_iocb = io_control->iocb[io_control->available-1] iff io_control->available > 0
+    int available;
 
 };
 
@@ -416,16 +415,12 @@ static inline struct iocb * getIOCB(struct io_control * control) {
     pthread_spin_lock(&(control->iocbLock));
 
     #ifdef DEBUG
-       fprintf (stdout, "getIOCB::used=%d, queueSize=%d, get=%d, put=%d\n", control->used, control->queueSize, control->iocbGet, control->iocbPut);
+       fprintf (stdout, "getIOCB::available=%d, queueSize=%d\n", control->available, control->queueSize);
     #endif
 
-    if (control->used < control->queueSize) {
-        control->used++;
-        iocb = control->iocb[control->iocbGet++];
-
-        if (control->iocbGet >= control->queueSize) {
-           control->iocbGet = 0;
-        }
+    if (control->available > 0) {
+        control->available--;
+        iocb = control->iocb[control->available];
     }
 
     pthread_spin_unlock(&(control->iocbLock));
@@ -436,16 +431,17 @@ static inline struct iocb * getIOCB(struct io_control * control) {
  * Put an iocb back on the pool of IOCBs
  */
 static inline void putIOCB(struct io_control * control, struct iocb * iocbBack) {
+    if (iocbBack == NULL) {
+        return;
+    }
     pthread_spin_lock(&(control->iocbLock));
 
     #ifdef DEBUG
-       fprintf (stdout, "putIOCB::used=%d, queueSize=%d, get=%d, put=%d\n", control->used, control->queueSize, control->iocbGet, control->iocbPut);
+       fprintf (stdout, "putIOCB::available=%d, queueSize=%d\n", control->available, control->queueSize);
     #endif
-
-    control->used--;
-    control->iocb[control->iocbPut++] = iocbBack;
-    if (control->iocbPut >= control->queueSize) {
-       control->iocbPut = 0;
+    if (control->available < control->queueSize) {
+        control->iocb[control->available] = iocbBack;
+        control->available++;
     }
     pthread_spin_unlock(&(control->iocbLock));
 }
@@ -506,7 +502,7 @@ static inline void iocb_destroy_bounded(struct io_control * theControl, int uppe
  * @param theControl
  */
 static inline void iocb_destroy(struct io_control * theControl) {
-    iocb_destroy_bounded(theControl, theControl->queueSize);
+    iocb_destroy_bounded(theControl, theControl->available);
 }
 
 /**
@@ -559,7 +555,8 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_Libaio
        }
     }
     theControl->queueSize = queueSize;
-
+    //iocb pool is full
+    theControl->available = queueSize;
 
     res = pthread_spin_init(&(theControl->iocbLock), 0);
     if (res) {
@@ -594,10 +591,6 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_Libaio
         return NULL;
     }
 
-
-    theControl->iocbPut = 0;
-    theControl->iocbGet = 0;
-    theControl->used = 0;
     theControl->thisObject = (*env)->NewGlobalRef(env, thisObject);
 
     return (*env)->NewDirectByteBuffer(env, theControl, sizeof(struct io_control));
@@ -641,12 +634,19 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
     pthread_mutex_destroy(&(theControl->pollLock));
     pthread_spin_destroy(&(theControl->iocbLock));
 
+    const int leaked_iocbs = theControl->queueSize - theControl->available;
+
     iocb_destroy(theControl);
 
     (*env)->DeleteGlobalRef(env, theControl->thisObject);
 
     free(theControl->events);
     free(theControl);
+
+    if (leaked_iocbs > 0) {
+        throwIOException(env, "There are pending I/O operations");
+        return;
+    }
 }
 
 JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_close(JNIEnv* env, jclass clazz, jint fd) {
