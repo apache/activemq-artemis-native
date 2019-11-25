@@ -49,7 +49,7 @@ struct io_control {
 
     // This is used to make sure we don't return IOCB while something else is using them
     // this is to guarantee the submits could be done concurrently with polling
-    pthread_mutex_t iocbLock;
+    pthread_spinlock_t iocbLock;
 
     pthread_mutex_t pollLock;
 
@@ -413,7 +413,7 @@ static inline struct io_control * getIOControl(JNIEnv* env, jobject pointer) {
 static inline struct iocb * getIOCB(struct io_control * control) {
     struct iocb * iocb = 0;
 
-    pthread_mutex_lock(&(control->iocbLock));
+    pthread_spin_lock(&(control->iocbLock));
 
     #ifdef DEBUG
        fprintf (stdout, "getIOCB::used=%d, queueSize=%d, get=%d, put=%d\n", control->used, control->queueSize, control->iocbGet, control->iocbPut);
@@ -428,7 +428,7 @@ static inline struct iocb * getIOCB(struct io_control * control) {
         }
     }
 
-    pthread_mutex_unlock(&(control->iocbLock));
+    pthread_spin_unlock(&(control->iocbLock));
     return iocb;
 }
 
@@ -436,7 +436,7 @@ static inline struct iocb * getIOCB(struct io_control * control) {
  * Put an iocb back on the pool of IOCBs
  */
 static inline void putIOCB(struct io_control * control, struct iocb * iocbBack) {
-    pthread_mutex_lock(&(control->iocbLock));
+    pthread_spin_lock(&(control->iocbLock));
 
     #ifdef DEBUG
        fprintf (stdout, "putIOCB::used=%d, queueSize=%d, get=%d, put=%d\n", control->used, control->queueSize, control->iocbGet, control->iocbPut);
@@ -447,7 +447,7 @@ static inline void putIOCB(struct io_control * control, struct iocb * iocbBack) 
     if (control->iocbPut >= control->queueSize) {
        control->iocbPut = 0;
     }
-    pthread_mutex_unlock(&(control->iocbLock));
+    pthread_spin_unlock(&(control->iocbLock));
 }
 
 static inline short submit(JNIEnv * env, struct io_control * theControl, struct iocb * iocb) {
@@ -561,7 +561,7 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_Libaio
     theControl->queueSize = queueSize;
 
 
-    res = pthread_mutex_init(&(theControl->iocbLock), 0);
+    res = pthread_spin_init(&(theControl->iocbLock), 0);
     if (res) {
         iocb_destroy(theControl);
 
@@ -639,7 +639,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
     io_queue_release(theControl->ioContext);
 
     pthread_mutex_destroy(&(theControl->pollLock));
-    pthread_mutex_destroy(&(theControl->iocbLock));
+    pthread_spin_destroy(&(theControl->iocbLock));
 
     iocb_destroy(theControl);
 
