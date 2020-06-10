@@ -47,7 +47,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
    /**
     * The Native layer will look at this version.
     */
-   private static final int EXPECTED_NATIVE_VERSION = 9;
+   private static final int EXPECTED_NATIVE_VERSION = 10;
 
    private static boolean loaded = false;
 
@@ -81,6 +81,9 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
       for (String library : libraries) {
          if (loadLibrary(library)) {
             loaded = true;
+            if (System.getProperty("org.apache.activemq.artemis.native.jlibaio.FORCE_SYSCALL") != null) {
+               LibaioContext.setForceSyscall(true);
+            }
             Runtime.getRuntime().addShutdownHook(new Thread() {
                @Override
                public void run() {
@@ -106,6 +109,11 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
    }
 
    private static native void shutdownHook();
+
+   public static native void setForceSyscall(boolean value);
+
+   /** The system may choose to set this if a failing condition happened inside the code. */
+   public static native boolean isForceSyscall();
 
    /**
     * This is used to validate leaks on tests.

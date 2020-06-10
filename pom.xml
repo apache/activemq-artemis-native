@@ -45,6 +45,8 @@
         <version.org.jacoco.plugin>0.7.9</version.org.jacoco.plugin>
         <version.maven.jar.plugin>2.4</version.maven.jar.plugin>
 
+        <test.stress.time>5000</test.stress.time>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -52,7 +54,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <activemq-surefire-argline>
-            -Djava.library.path="${activemq.basedir}/target/lib/linux-${os.arch}"
+            -Dtest.stress.time=${test.stress.time} -Djava.library.path="${activemq.basedir}/target/lib/linux-${os.arch}"
         </activemq-surefire-argline>
         <activemq.basedir>${project.basedir}</activemq.basedir>
         <skipLicenseCheck>true</skipLicenseCheck>
