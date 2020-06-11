@@ -70,6 +70,31 @@ struct io_control {
 #define AIO_RING_MAGIC	0xa10a10a1
 #define AIO_RING_INCOMPAT_FEATURES	0
 
+// set this to 0 if you want to stop using ring reaping
+#define RING_REAPER 1
+
+jboolean forceSysCall = JNI_FALSE;
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    setForceSyscall
+ * Signature: (Z)V
+ */
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_setForceSyscall
+  (JNIEnv * env, jclass clazz, jboolean _forceSysCall) {
+  forceSysCall = _forceSysCall;
+}
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    isForceSyscall
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_isForceSyscall
+  (JNIEnv * env, jclass clazz) {
+  return forceSysCall | !RING_REAPER;
+}
+
 
 /** There is no defined aio_ring anywhere in an include,
     This is an implementation detail, that is a binary contract.
@@ -106,7 +131,7 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
                                                        struct io_event *events, struct timespec *timeout) {
     struct aio_ring *ring = to_aio_ring(aio_ctx);
     //checks if it could be completed in user space, saving a sys call
-    if (has_usable_ring(ring)) {
+    if (RING_REAPER && !forceSysCall && has_usable_ring(ring)) {
         const unsigned ring_nr = ring->nr;
         // We're assuming to be the exclusive writer to head, so we just need a compiler barrier
         unsigned head = ring->head;
@@ -124,6 +149,24 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             if (!available) {
                 return 0;
             }
+
+            if (available >= max) {
+               // This is to trap a possible bug from the kernel:
+               //       https://bugzilla.redhat.com/show_bug.cgi?id=1845326
+               //       https://issues.apache.org/jira/browse/ARTEMIS-2800
+               //
+               // On the race available would eventually be >= max, while ring->tail was invalid
+               // we could work around by waiting ring-tail to change:
+               // while (ring->tail == tail) mem_barrier();
+               //
+               // however eventually we could have available==max in a legal situation what could lead to infinite loop here
+               return io_getevents(aio_ctx, min_nr, max, events, timeout);
+
+               // also: I could have called io_getevents to the one at the end of this method
+               //       but I really hate goto, so I would rather have a duplicate code here
+               //       and I did not want to create another memory flag to stop the rest of the code
+            }
+
             //the kernel has written ring->tail from an interrupt:
             //we need to load acquire the completed events here
             read_barrier();
@@ -152,6 +195,8 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             fprintf(stdout, "The kernel is not supoprting the ring buffer any longer\n");
         #endif
     }
+    // if this next line ever needs to be changed, beware of a duplicate code on this method
+    // I explain why I duplicated the call instead of reuse it there ^^^^
     int sys_call_events = io_getevents(aio_ctx, min_nr, max, events, timeout);
     #ifdef DEBUG
         fprintf(stdout, "consumed sys-call = %d\n", sys_call_events);
@@ -178,8 +223,6 @@ jmethodID libaioContextDone = NULL;
 jclass libaioContextClass = NULL;
 jclass runtimeExceptionClass = NULL;
 jclass ioExceptionClass = NULL;
-jclass nioBufferClass = NULL;
-jfieldID nioBufferAddressFieldId = NULL;
 
 // util methods
 void throwRuntimeException(JNIEnv* env, char* message) {
@@ -333,13 +376,6 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
            return JNI_ERR;
         }
 
-        nioBufferClass = (*env)->FindClass(env, "java/nio/Buffer");
-        if (nioBufferClass == NULL) {
-           return JNI_ERR;
-        }
-        nioBufferClass = (jclass)(*env)->NewGlobalRef(env, (jobject)nioBufferClass);
-        nioBufferAddressFieldId = (*env)->GetFieldID(env, nioBufferClass, "address", "J");
-
         return JNI_VERSION_1_6;
     }
 }
@@ -385,10 +421,6 @@ void JNI_OnUnload(JavaVM* vm, void* reserved) {
         if (libaioContextClass != NULL) {
             (*env)->DeleteGlobalRef(env, (jobject)libaioContextClass);
         }
-
-        if (nioBufferClass != NULL) {
-            (*env)->DeleteGlobalRef(env, (jobject)nioBufferClass);
-        }
     }
 }
 
@@ -399,8 +431,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
 
 
 static inline struct io_control * getIOControl(JNIEnv* env, jobject pointer) {
-    jlong address = (*env)->GetLongField(env, pointer, nioBufferAddressFieldId);
-    struct io_control * ioControl = (struct io_control *) address;
+    struct io_control * ioControl = (struct io_control *) (*env)->GetDirectBufferAddress(env, pointer);
     if (ioControl == NULL) {
        throwRuntimeException(env, "Controller not initialized");
     }
@@ -468,7 +499,7 @@ static inline short submit(JNIEnv * env, struct io_control * theControl, struct 
 }
 
 static inline void * getBuffer(JNIEnv* env, jobject pointer) {
-    return (void *) (*env)->GetLongField(env, pointer, nioBufferAddressFieldId);;
+    return (*env)->GetDirectBufferAddress(env, pointer);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_lock
@@ -818,12 +849,19 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
             }
 
             jobject obj = (jobject)iocbp->data;
-            putIOCB(theControl, iocbp);
+            iocbp->data = NULL; // this is to detect invalid elements on the buffer.
 
             if (obj != NULL) {
+                putIOCB(theControl, iocbp);
                 (*env)->CallVoidMethod(env, theControl->thisObject, libaioContextDone,obj);
                 // We delete the globalRef after the completion of the callback
                 (*env)->DeleteGlobalRef(env, obj);
+            } else {
+                if (!forceSysCall) {
+                    fprintf (stdout, "Warning from ActiveMQ Artemis Native Layer: Your system is hitting duplicate / invalid records from libaio, which is a bug on the Linux Kernel you are using.\nYou should set property org.apache.activemq.artemis.native.jlibaio.FORCE_SYSCALL=1\nor upgrade to a kernel version that contains a fix");
+                    fflush(stdout);
+                }
+                forceSysCall = JNI_TRUE;
             }
 
         }
@@ -908,7 +946,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
        throwRuntimeException(env, "Null pointer");
        return;
     }
-  	void *  buffer = getBuffer(env, jbuffer);
+  	void *  buffer = (*env)->GetDirectBufferAddress(env, jbuffer);
   	free(buffer);
 }
 
@@ -1023,7 +1061,7 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
     #ifdef DEBUG
         fprintf (stdout, "Mem setting buffer with %d bytes\n", size);
     #endif
-    void * buffer = getBuffer(env, jbuffer);
+    void * buffer = (*env)->GetDirectBufferAddress(env, jbuffer);
 
     if (buffer == 0)
     {
