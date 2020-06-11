@@ -39,7 +39,7 @@ Before starting make sure you clone a brand new git as follows as the release pl
 
 ```sh
 git clone git://github.com/apache/activemq-artemis-native.git
-cd activemq-artemis-artemis
+cd activemq-artemis-native
 git remote add upstream https://gitbox.apache.org/repos/asf/activemq-artemis-native.git
 ```
 
