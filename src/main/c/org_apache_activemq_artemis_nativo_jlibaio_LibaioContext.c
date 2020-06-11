@@ -149,6 +149,24 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             if (!available) {
                 return 0;
             }
+
+            if (available >= max) {
+               // This is to trap a possible bug from the kernel:
+               //       https://bugzilla.redhat.com/show_bug.cgi?id=1845326
+               //       https://issues.apache.org/jira/browse/ARTEMIS-2800
+               //
+               // On the race available would eventually be >= max, while ring->tail was invalid
+               // we could work around by waiting ring-tail to change:
+               // while (ring->tail == tail) mem_barrier();
+               //
+               // however eventually we could have available==max in a legal situation what could lead to infinite loop here
+               return io_getevents(aio_ctx, min_nr, max, events, timeout);
+
+               // also: I could have called io_getevents to the one at the end of this method
+               //       but I really hate goto, so I would rather have a duplicate code here
+               //       and I did not want to create another memory flag to stop the rest of the code
+            }
+
             //the kernel has written ring->tail from an interrupt:
             //we need to load acquire the completed events here
             read_barrier();
@@ -177,6 +195,8 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             fprintf(stdout, "The kernel is not supoprting the ring buffer any longer\n");
         #endif
     }
+    // if this next line ever needs to be changed, beware of a duplicate code on this method
+    // I explain why I duplicated the call instead of reuse it there ^^^^
     int sys_call_events = io_getevents(aio_ctx, min_nr, max, events, timeout);
     #ifdef DEBUG
         fprintf(stdout, "consumed sys-call = %d\n", sys_call_events);
