@@ -151,11 +151,6 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             }
 
             if (available >= max) {
-               short retryTail = 0;
-               // we first wait for 20 iterations, to see if the tail moved
-               for (retryTail = 0; retryTail < 20 && ring->tail == tail; retryTail++) {
-                  mem_barrier();
-               }
                // This is to trap a possible bug from the kernel:
                //       https://bugzilla.redhat.com/show_bug.cgi?id=1845326
                //       https://issues.apache.org/jira/browse/ARTEMIS-2800
@@ -165,10 +160,7 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
                // while (ring->tail == tail) mem_barrier();
                //
                // however eventually we could have available==max in a legal situation what could lead to infinite loop here
-               if (retryTail == 20) {
-                   // if the tail didn't move, we will then perform a regular syscall
-                   return io_getevents(aio_ctx, min_nr, max, events, timeout);
-               }
+               return io_getevents(aio_ctx, min_nr, max, events, timeout);
 
                // also: I could have called io_getevents to the one at the end of this method
                //       but I really hate goto, so I would rather have a duplicate code here
@@ -782,12 +774,6 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
       return;
     }
     int max = theControl->queueSize;
-    if (max > 1) {
-       // We can't maximize the queue reading
-       // as we need to check eventually for the tail moving
-       // this is to minimize the number of syscalls we perform on trapping a previous race.
-       max = max / 2;
-    }
     pthread_mutex_lock(&(theControl->pollLock));
 
     short running = 1;
