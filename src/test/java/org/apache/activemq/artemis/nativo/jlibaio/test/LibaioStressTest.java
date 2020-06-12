@@ -42,6 +42,10 @@ public class LibaioStressTest {
 
     private static final int STRESS_TIME = Integer.parseInt(System.getProperty("test.stress.time", "5000"));
 
+    static {
+        System.out.println("LibaioStressTest:: -Dtest.stress.time=" + STRESS_TIME);
+    }
+
     /**
      * This is just an arbitrary number for a number of elements you need to pass to the libaio init method
      * Some of the tests are using half of this number, so if anyone decide to change this please use an even number.
@@ -124,7 +128,16 @@ public class LibaioStressTest {
     }
 
     @Test
+    public void testStressWritesNoSleeps() throws Exception {
+        testStressWrites(false);
+    }
+
+    @Test
     public void testStressWrites() throws Exception {
+        testStressWrites(true);
+    }
+
+    private void testStressWrites(boolean sleeps) throws Exception {
         Assume.assumeFalse(LibaioContext.isForceSyscall());
 
         Thread t = new Thread() {
@@ -150,8 +163,8 @@ public class LibaioStressTest {
 
         t2.start();
 
-        Thread test1 = startThread("test1.bin");
-        Thread test2 = startThread("test2.bin");
+        Thread test1 = startThread("test1.bin", sleeps);
+        Thread test2 = startThread("test2.bin", sleeps);
         Thread.sleep(STRESS_TIME); // Configured timeout on the test
         running = false;
         test2.join();
@@ -162,10 +175,10 @@ public class LibaioStressTest {
         return;
     }
 
-    private Thread startThread(String name) {
+    private Thread startThread(String name, boolean sleeps) {
         Thread t_test = new Thread(() -> {
             try {
-                doFile(name);
+                doFile(name, sleeps);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -177,7 +190,7 @@ public class LibaioStressTest {
         return t_test;
     }
 
-    private void doFile(String fileName) throws IOException, InterruptedException {
+    private void doFile(String fileName, boolean sleeps) throws IOException, InterruptedException {
         ReusableLatch latchWrites = new ReusableLatch(0);
 
         File file = temporaryFolder.newFile(fileName);
@@ -230,8 +243,10 @@ public class LibaioStressTest {
             myClass.reusableLatch.countUp();
 
 
-            if (count % 100 == 0) {
-                Thread.sleep(100);
+            if (sleeps) {
+                if (count % 100 == 0) {
+                    Thread.sleep(100);
+                }
             }
             fileDescriptor.write(pos, 4096, buffer, myClass);
             pos += 4096;
