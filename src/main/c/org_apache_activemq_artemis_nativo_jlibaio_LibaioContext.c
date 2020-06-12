@@ -151,7 +151,6 @@ static int ringio_get_events(io_context_t aio_ctx, long min_nr, long max,
             }
 
             if (available >= max) {
-               fprintf (stderr, "Forcing a syscall\n"); fflush(stderr);
                // This is to trap a possible bug from the kernel:
                //       https://bugzilla.redhat.com/show_bug.cgi?id=1845326
                //       https://issues.apache.org/jira/browse/ARTEMIS-2800
