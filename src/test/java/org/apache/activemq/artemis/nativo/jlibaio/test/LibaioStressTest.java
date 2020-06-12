@@ -230,7 +230,7 @@ public class LibaioStressTest {
                 nextBreak = System.currentTimeMillis() + 5000;
             }
 
-            if (count % 1_000 == 0) {
+            if (count % (sleeps ? 1_000 : 100_000) == 0) {
                 System.out.println("Writen "  + count + " buffers at " + fileName);
             }
             MyClass myClass = callbackCache.get();
