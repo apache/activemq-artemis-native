@@ -22,6 +22,14 @@ docker run --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder "$@"
 chown -Rv $USER:$GID ./bin
 ls -liat ./target/lib
 
+echo -e "\nGoing to build libartemis-native.so for aarch64"
+# enable QEMU to be able to run non-x86_64 Docker images
+docker run -it --rm --privileged multiarch/qemu-user-static --reset --credential yes --persistent yes
+docker build -f src/main/docker/Dockerfile-centos.aarch64 -t artemis-native-builder:aarch64 .
+docker run --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder:aarch64 "$@"
+ls -liat ./target/lib
+
+
 # Note: You may need to authorize docker to map folder at your folder structure
 #docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder bash
 
