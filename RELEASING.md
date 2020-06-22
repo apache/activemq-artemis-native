@@ -113,6 +113,32 @@ scm.url=scm:git:https://github.com/apache/activemq-artemis.git
 scm.tag=1.4.0
 ```
 
+## Stage the release to the dist dev area
+
+Use the closed staging repo contents to populate the the dist dev svn area
+with the official release artifacts for voting. Use the script already present
+in the repo to download the files and populate a new ${CURRENT-RELEASE} dir:
+
+```sh
+svn co https://dist.apache.org/repos/dist/dev/activemq/activemq-artemis-native/
+cd activemq-artemis
+./prepare-release.sh https://repository.apache.org/content/repositories/orgapacheactivemq-${NEXUS-REPO-ID} ${CURRENT-RELEASE}
+```
+Give the files a check over and commit the new dir and start a vote if all looks well.
+
+```bash
+svn add <version>
+svn commit
+
+
+## Commit the download source
+
+After the release is VOTED and aproved, you can release the maven repo on nexus,
+and you can use this script to move the prepared release into the official place:
+
+```sh
+svn cp -m "add files for activemq-artemis-native-${CURRENT-RELEASE}" https://dist.apache.org/repos/dist/dev/activemq/activemq-artemis-native/${CURRENT-RELEASE} https://dist.apache.org/repos/dist/release/activemq/activemq-artemis-native/${CURRENT-RELEASE}
+```
 
 ## Apache Guide
 
