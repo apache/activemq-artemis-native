@@ -32,8 +32,8 @@ endif()
 # harder. Nonetheless, it can still be added by passing CMAKE_USER_C_FLAGS
 # Also note that define the C99 as the minimum supported standard so the code can be compiled with older GCC versions
 # (circa 4.4)
-set(CMAKE_C_FLAGS_DEBUG "-Wall -std=c99 -z execstack -fdump-tree-all -Wall -pg -g ${CMAKE_USER_C_FLAGS}")
-set(CMAKE_C_FLAGS "-O3 -std=c99 -Wall ${CMAKE_USER_C_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -std=gnu11 -z execstack -fdump-tree-all -Wall -pg -g ${CMAKE_USER_C_FLAGS}")
+set(CMAKE_C_FLAGS "-O3 -std=gnu11 -Wall ${CMAKE_USER_C_FLAGS}")
 
 
 set(ARTEMIS_LIB_NAME artemis-native-64)
