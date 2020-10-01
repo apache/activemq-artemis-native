@@ -29,9 +29,8 @@ public final class LibaioFile<Callback extends SubmitInfo> implements AutoClosea
     * This represents a structure allocated on the native
     * this is a io_context_t
     */
-   final LibaioContext<Callback> ctx;
-
-   private int fd;
+   private final LibaioContext<Callback> ctx;
+   private final int fd;
 
    LibaioFile(int fd, LibaioContext ctx) {
       this.ctx = ctx;
@@ -73,8 +72,8 @@ public final class LibaioFile<Callback extends SubmitInfo> implements AutoClosea
     * @param callback A callback to be returned on the poll method.
     * @throws java.io.IOException in case of error
     */
-   public void write(long position, int size, ByteBuffer buffer, Callback callback) throws IOException {
-      ctx.submitWrite(fd, position, size, buffer, callback);
+   public int write(long position, int size, ByteBuffer buffer, Callback callback) throws IOException {
+      return ctx.submitWrite(fd, position, size, buffer, callback);
    }
 
    /**
@@ -93,8 +92,8 @@ public final class LibaioFile<Callback extends SubmitInfo> implements AutoClosea
     * @throws java.io.IOException in case of error
     * @see LibaioContext#poll(SubmitInfo[], int, int)
     */
-   public void read(long position, int size, ByteBuffer buffer, Callback callback) throws IOException {
-      ctx.submitRead(fd, position, size, buffer, callback);
+   public int read(long position, int size, ByteBuffer buffer, Callback callback) throws IOException {
+      return ctx.submitRead(fd, position, size, buffer, callback);
    }
 
    /**

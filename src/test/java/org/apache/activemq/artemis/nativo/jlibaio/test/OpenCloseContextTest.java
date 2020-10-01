@@ -150,6 +150,7 @@ public class OpenCloseContextTest {
 
             @Override
             public void done() {
+               System.out.println("empty done");
             }
          });
 
