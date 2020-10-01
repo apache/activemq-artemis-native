@@ -67,7 +67,7 @@ public class LibaioStressTest {
     }
 
     @After
-    public void deleteFactory() {
+    public void deleteFactory() throws IOException {
         control.close();
         validateLibaio();
     }
