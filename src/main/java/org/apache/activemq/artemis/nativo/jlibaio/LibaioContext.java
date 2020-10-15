@@ -25,6 +25,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Queue;
@@ -517,7 +519,6 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
       }
       pollLock.lock();
       try {
-         boolean asyncFDataSync = true;
          final int dumbFD = this.dumbFD;
          final AioRing aioRing = this.aioRing;
          final IoEventArray ioEventArray = this.ioEventArray;
@@ -528,6 +529,15 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
          final int queueSize = this.queueSize;
          final long ioContextAddress = this.ioContextAddress;
          final long ioEventArrayAddress = ioEventArray.address();
+         // there is just one allowerd in-flight fdatasync
+         int inflightFDSyncFd = -1;
+         // we accumulate write callbacks in order to not block reads to happen
+         // until there are no IOCBs
+         final ArrayDeque<PooledIOCB> awaitingFDSync = new ArrayDeque<>(queueSize);
+         // this are the already completed writes on the fd that's fdsync'ed
+         // there are being flushed as soon as the inflightFDSyncFd land.
+         // Right after, the awaitingFDSync will be processed to issue a new fdatasync
+         final ArrayDeque<PooledIOCB> completedFDSyncCallbacks = new ArrayDeque<>(queueSize);
          while (true) {
             int events = 0;
             if (aioRing != null) {
@@ -541,6 +551,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             }
             assert events > 0 && events <= queueSize;
             boolean stop = false;
+            boolean completedWrites = false;
             for (int i = 0; i < events; i++) {
                final IoEventArray.IoEvent ioEvent = ioEventArray.get(i);
                assert ioEvent.obj() != 0;
@@ -551,30 +562,40 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
                assert IoCb.aioData(pooledIOCBBytes) == id;
                SubmitInfo submitInfo = pooledIOCB.submitInfo;
                long res = ioEvent.res();
+               final short liOpCode = IoCb.lioOpCode(pooledIOCBBytes);
                if (res >= 0) {
-                  final short liOpCode = IoCb.lioOpCode(pooledIOCBBytes);
                   final int fd = IoCb.aioFildes(pooledIOCBBytes);
                   if (liOpCode == IoCb.IOCB_CMD_PWRITE) {
                      if (fd == dumbFD) {
                         stop = true;
                      } else if (useFdatasync) {
-                        // submit an async fdatasync by re-using the current IOPS
-                        assert submitInfo != null;
-                        if (asyncFDataSync) {
+                        if (inflightFDSyncFd >= 0) {
+                           if (completedWrites) {
+                              if (inflightFDSyncFd == fd) {
+                                 completedFDSyncCallbacks.add(pooledIOCB);
+                              } else {
+                                 awaitingFDSync.add(pooledIOCB);
+                              }
+                           } else {
+                              awaitingFDSync.add(pooledIOCB);
+                           }
+                           // this create backpressure, in case of awaitingFDSyncs
+                           pooledIOCB = null;
+                           submitInfo = null;
+                        } else {
                            try {
                               submitFDataSync(fd, ioContextAddress, pooledIOCB.address, id);
                               // allow to reuse the pooledIOCB and IOPS used for pwrite
                               // and to preserve submitInfo
                               pooledIOCB = null;
                               submitInfo = null;
+                              completedWrites = true;
+                              inflightFDSyncFd = fd;
                            } catch (IOException ioException) {
-                              NativeLogger.LOGGER.error("Impossible to submit an async fdatasync: try with sync one from now on", ioException);
-                              asyncFDataSync = false;
+                              NativeLogger.LOGGER.error("Impossible to submit async fdatasync", ioException);
+                              // emulate a generic error: this could be improved
+                              res = -1;
                            }
-                        }
-                        if (!asyncFDataSync) {
-                           assert pooledIOCB != null && submitInfo != null;
-                           fdatasync(fd);
                         }
                      }
                   }
@@ -600,15 +621,113 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
                      // TODO the error string can be cached?
                      submitInfo.onError((int) -res, strError(res));
                   }
+                  if (liOpCode == IoCb.IOCB_CMD_FDSYNC) {
+                     inflightFDSyncFd = onCompletedFDSync(awaitingFDSync, completedFDSyncCallbacks, res, ioContextAddress, iocbPool, ioSpace, false);
+                     // that's important to correctly accumulate already completed writes
+                     completedWrites = inflightFDSyncFd >= 0;
+                  }
                }
             }
             if (stop) {
+               if (!useFdatasync) {
+                  return;
+               }
+               // flush any existing pending write calling a sync datasync
+               while (onCompletedFDSync(awaitingFDSync, completedFDSyncCallbacks, 0, ioContextAddress, iocbPool, ioSpace, true) >= 0) {
+
+               }
                return;
             }
          }
       } finally {
          pollLock.unlock();
       }
+   }
+
+   private static int onCompletedFDSync(ArrayDeque<PooledIOCB> awaitingFDSync,
+                                        ArrayDeque<PooledIOCB> completedFDSyncCallbacks,
+                                        long res,
+                                        long ioContextAddress,
+                                        Queue<PooledIOCB> iocbPool,
+                                        Semaphore ioSpace,
+                                        boolean forceSync) {
+      final String error = res >= 0 ? null : strError(res);
+      // complete write callbacks related to the completed fdatasync
+      for (int i = 0, size = completedFDSyncCallbacks.size(); i < size; i++) {
+         final PooledIOCB pooledIOCB = completedFDSyncCallbacks.poll();
+         final SubmitInfo submitInfo = pooledIOCB.submitInfo;
+         assert submitInfo != null;
+         pooledIOCB.submitInfo = null;
+         // NOTE:
+         // First we return back the IOCB then we release the semaphore, to let submitInfo::done
+         // to be able to issue a further write/read
+         iocbPool.add(pooledIOCB);
+         if (ioSpace != null) {
+            ioSpace.release();
+         }
+         if (res >= 0) {
+            submitInfo.done();
+         } else {
+            submitInfo.onError((int) -res, error);
+         }
+      }
+      assert completedFDSyncCallbacks.isEmpty();
+      // search the next (if any) fd to fdsync
+      int inflightFDSyncFd;
+      do {
+         PooledIOCB pooledIOCB = awaitingFDSync.poll();
+         if (pooledIOCB == null) {
+            return -1;
+         }
+         inflightFDSyncFd = IoCb.aioFildes(pooledIOCB.bytes);
+         try {
+            if (!forceSync) {
+               submitFDataSync(inflightFDSyncFd, ioContextAddress, pooledIOCB.address, pooledIOCB.id);
+            } else {
+               fdatasync(inflightFDSyncFd);
+               forceDone(pooledIOCB, iocbPool, ioSpace);
+            }
+            break;
+         } catch (IOException ioException) {
+            NativeLogger.LOGGER.error("Impossible to submit async fdatasync", ioException);
+            // return this back into the pool
+            forceGenericError(pooledIOCB, iocbPool, ioSpace);
+         }
+      } while (true);
+      assert inflightFDSyncFd >= 0;
+      // move any awaitingFDSync on this same fd as completedFDSyncCallbacks
+      for (int i = 0, size = awaitingFDSync.size(); i < size; i++) {
+         final PooledIOCB pooledIOCB = awaitingFDSync.poll();
+         final int fd = IoCb.aioFildes(pooledIOCB.bytes);
+         if (fd != inflightFDSyncFd) {
+            // return it back into this same
+            awaitingFDSync.add(pooledIOCB);
+         } else {
+            completedFDSyncCallbacks.add(pooledIOCB);
+         }
+      }
+      return inflightFDSyncFd;
+   }
+
+   private static void forceDone(PooledIOCB pooledIOCB, Queue<PooledIOCB> iocbPool, Semaphore ioSpace) {
+      final SubmitInfo submitInfo = pooledIOCB.submitInfo;
+      pooledIOCB.submitInfo = null;
+      iocbPool.add(pooledIOCB);
+      if (ioSpace != null) {
+         ioSpace.release();
+      }
+      submitInfo.done();
+   }
+
+   private static void forceGenericError(PooledIOCB pooledIOCB, Queue<PooledIOCB> iocbPool, Semaphore ioSpace) {
+      SubmitInfo submitInfo = pooledIOCB.submitInfo;
+      pooledIOCB.submitInfo = null;
+      iocbPool.add(pooledIOCB);
+      if (ioSpace != null) {
+         ioSpace.release();
+      }
+      // immediately call onError on this write
+      submitInfo.onError(1, strError(-1));
    }
 
    private static native String strError(long eventError);
