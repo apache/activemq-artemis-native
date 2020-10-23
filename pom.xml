@@ -39,7 +39,7 @@
     <properties>
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
         <jb.logmanager.version>2.0.3.Final</jb.logmanager.version>
-
+        <jctools.version>3.1.0</jctools.version>
         <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
         <version.org.jacoco>0.7.9</version.org.jacoco>
         <version.org.jacoco.plugin>0.7.9</version.org.jacoco.plugin>
@@ -146,6 +146,12 @@
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
             <version>${jb.logmanager.version}</version>
+            <!-- License: Apache 2.0 -->
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <version>${jctools.version}</version>
             <!-- License: Apache 2.0 -->
         </dependency>
     </dependencies>

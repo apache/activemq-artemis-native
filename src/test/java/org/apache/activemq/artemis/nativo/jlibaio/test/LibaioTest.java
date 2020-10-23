@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.activemq.artemis.nativo.jlibaio.AioRing;
 import org.apache.activemq.artemis.nativo.jlibaio.LibaioContext;
 import org.apache.activemq.artemis.nativo.jlibaio.LibaioFile;
 import org.apache.activemq.artemis.nativo.jlibaio.SubmitInfo;
@@ -84,7 +85,7 @@ public class LibaioTest {
    }
 
    @After
-   public void deleteFactory() {
+   public void deleteFactory() throws IOException {
       control.close();
       validateLibaio();
    }
@@ -591,7 +592,7 @@ public class LibaioTest {
 
          // it should be possible to write now after queue space being released
          fileDescriptor.write(0, 4096, buffer, new TestInfo());
-         Assert.assertEquals(1, control.poll(callbacks, 1, 100));
+         Assert.assertEquals(1, control.poll(callbacks, 1, 50));
 
          TestInfo errorCallback = new TestInfo();
          // odd positions will have failures through O_DIRECT

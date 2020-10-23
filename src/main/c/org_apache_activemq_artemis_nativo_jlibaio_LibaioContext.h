@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 #undef org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION
-#define org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION 10L
+#define org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION 11L
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    shutdownHook
@@ -35,6 +35,30 @@ JNIEXPORT jboolean JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_Libai
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    strError
+ * Signature: (J)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_strError
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    dumbFD
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_dumbFD
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    memoryAddress0
+ * Signature: (Ljava/nio/ByteBuffer;)J
+ */
+JNIEXPORT jlong JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_memoryAddress0
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    newContext
  * Signature: (I)Ljava/nio/ByteBuffer;
  */
@@ -47,7 +71,7 @@ JNIEXPORT jobject JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_Libaio
  * Signature: (Ljava/nio/ByteBuffer;)V
  */
 JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_deleteContext
-  (JNIEnv *, jobject, jobject);
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
@@ -84,34 +108,34 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    submitWrite
- * Signature: (ILjava/nio/ByteBuffer;JILjava/nio/ByteBuffer;Lorg/apache/activemq/artemis/nativo/jlibaio/SubmitInfo;)V
+ * Signature: (IJJJIJJ)V
  */
 JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_submitWrite
-  (JNIEnv *, jobject, jint, jobject, jlong, jint, jobject, jobject);
+  (JNIEnv *, jclass, jint, jlong, jlong, jlong, jint, jlong, jlong);
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    submitRead
- * Signature: (ILjava/nio/ByteBuffer;JILjava/nio/ByteBuffer;Lorg/apache/activemq/artemis/nativo/jlibaio/SubmitInfo;)V
+ * Signature: (IJJJIJJ)V
  */
 JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_submitRead
-  (JNIEnv *, jobject, jint, jobject, jlong, jint, jobject, jobject);
+  (JNIEnv *, jclass, jint, jlong, jlong, jlong, jint, jlong, jlong);
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    submitFDataSync
+ * Signature: (IJJJ)V
+ */
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_submitFDataSync
+  (JNIEnv *, jclass, jint, jlong, jlong, jlong);
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    poll
- * Signature: (Ljava/nio/ByteBuffer;[Lorg/apache/activemq/artemis/nativo/jlibaio/SubmitInfo;II)I
+ * Signature: (JJII)I
  */
 JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_poll
-  (JNIEnv *, jobject, jobject, jobjectArray, jint, jint);
-
-/*
- * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
- * Method:    blockedPoll
- * Signature: (Ljava/nio/ByteBuffer;Z)V
- */
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_blockedPoll
-  (JNIEnv *, jobject, jobject, jboolean);
+  (JNIEnv *, jclass, jlong, jlong, jint, jint);
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
@@ -155,6 +179,14 @@ JNIEXPORT jint JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
+ * Method:    getIOContextAddress
+ * Signature: (Ljava/nio/ByteBuffer;)J
+ */
+JNIEXPORT jlong JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_getIOContextAddress
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    getBlockSize
  * Signature: (Ljava/lang/String;)I
  */
@@ -179,11 +211,11 @@ JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioCon
 
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
- * Method:    writeInternal
- * Signature: (IJJLjava/nio/ByteBuffer;)V
+ * Method:    fdatasync
+ * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_writeInternal
-  (JNIEnv *, jclass, jint, jlong, jlong, jobject);
+JNIEXPORT void JNICALL Java_org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_fdatasync
+  (JNIEnv *, jclass, jint);
 
 #ifdef __cplusplus
 }
