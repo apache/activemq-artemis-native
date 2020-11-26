@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+project(Artemis_ActiveMQ_Native)
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SUBDIRS(src/main/c)
