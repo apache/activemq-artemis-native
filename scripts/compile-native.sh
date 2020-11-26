@@ -16,10 +16,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# This will compile both 32 and 64 bits version
+# This will compile both 32 and 64 bits version for AMD64 and only 64 bits version for AARCH64 
+ARCH=`uname -p`
 
-cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="-m32" -DARTEMIS_CROSS_COMPILE=On -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
-make
-rm -rf CMakeCache.txt cmake_install.cmake
+if test "x$ARCH" = "x86_64"; then
+    # x86_32
+    cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="-m32" -DARTEMIS_CROSS_COMPILE=On -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
+    make
+    rm -rf CMakeCache.txt cmake_install.cmake
+fi
+
+# 64 bit (AMD64 and AARCH64)
 cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="" -DARTEMIS_CROSS_COMPILE=Off -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
 make
