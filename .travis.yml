@@ -17,7 +17,6 @@
 
 os: linux
 dist: focal
-sudo: true
 
 arch:
   - amd64
