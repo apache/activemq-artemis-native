@@ -20,6 +20,7 @@ package org.apache.activemq.artemis.nativo.jlibaio.test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
@@ -703,13 +704,19 @@ public class LibaioTest {
 
    static class TestInfo implements SubmitInfo {
 
-      static AtomicInteger count = new AtomicInteger();
+      static final Cleaner cleaner;
 
-      @Override
-      protected void finalize() throws Throwable {
-         super.finalize();
-         count.decrementAndGet();
+      static {
+         Cleaner tempCleaner;
+         try {
+            tempCleaner = Cleaner.create();
+         } catch (Throwable e) {
+            e.printStackTrace();
+            tempCleaner = null;
+         }
+         cleaner = tempCleaner;
       }
+      static AtomicInteger count = new AtomicInteger();
 
       public static void checkLeaks() throws InterruptedException {
          for (int i = 0; count.get() != 0 && i < 50; i++) {
@@ -728,6 +735,8 @@ public class LibaioTest {
 
       TestInfo() {
          count.incrementAndGet();
+         cleaner.register(this, count::decrementAndGet);
+
       }
 
       @Override

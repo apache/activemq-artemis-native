@@ -47,7 +47,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
    /**
     * The Native layer will look at this version.
     */
-   private static final int EXPECTED_NATIVE_VERSION = 10;
+   private static final int EXPECTED_NATIVE_VERSION = 11;
 
    private static boolean loaded = false;
 
@@ -63,13 +63,13 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
       try {
          System.loadLibrary(name);
          if (getNativeVersion() != EXPECTED_NATIVE_VERSION) {
-            NativeLogger.LOGGER.incompatibleNativeLibrary();
+            NativeLogger.incompatibleNativeLibrary();
             return false;
          } else {
             return true;
          }
       } catch (Throwable e) {
-         NativeLogger.LOGGER.debug(name + " -> error loading the native library", e);
+         NativeLogger.debug(name + " -> error loading the native library", e);
          return false;
       }
 
@@ -93,12 +93,12 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             });
             break;
          } else {
-            NativeLogger.LOGGER.debug("Library " + library + " not found!");
+            NativeLogger.debug("Library " + library + " not found!");
          }
       }
 
       if (!loaded) {
-         NativeLogger.LOGGER.debug("Couldn't locate LibAIO Wrapper");
+         NativeLogger.debug("Couldn't locate LibAIO Wrapper");
       }
    }
 
@@ -242,7 +242,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             try {
                ioSpace.tryAcquire(queueSize, 10, TimeUnit.SECONDS);
             } catch (Exception e) {
-               NativeLogger.LOGGER.error(e);
+               NativeLogger.warn(e.getMessage(), e);
             }
          }
          totalMaxIO.addAndGet(-queueSize);
@@ -255,11 +255,6 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
       }
    }
 
-   @Override
-   protected void finalize() throws Throwable {
-      super.finalize();
-      close();
-   }
 
    /**
     * It will open a file. If you set the direct flag = false then you won't need to use the special buffer.

@@ -16,35 +16,40 @@
  */
 package org.apache.activemq.artemis.nativo.jlibaio;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
+public class NativeLogger {
 
-/**
- * Logger Code 16
- *
- * each message id must be 6 digits long starting with 16, the 3rd digit denotes the level so
- *
- * INF0  1
- * WARN  2
- * DEBUG 3
- * ERROR 4
- * TRACE 5
- * FATAL 6
- *
- * so an INFO message would be 161000 to 161999
- */
-@MessageLogger(projectCode = "jlibaio")
-public interface NativeLogger extends BasicLogger {
+   public static final String PROJECT_PREFIX = "jlibaio";
 
-   /**
-    * The journal logger.
-    */
-   NativeLogger LOGGER = Logger.getMessageLogger(NativeLogger.class, NativeLogger.class.getPackage().getName());
+   private static LoggerCallback loggerCallback = new SystemCallback();
 
-   @LogMessage(level = Logger.Level.WARN)
-   @Message(id = 163001, value = "You have a native library with a different version than expected", format = Message.Format.MESSAGE_FORMAT)
-   void incompatibleNativeLibrary();
+   public static void setLoggerCallback(LoggerCallback callback) {
+      loggerCallback = callback;
+   }
+
+   private static final int DIFFERENT_VERSION_ID = 163001;
+   private static final String DIFFERENT_VERSION = PROJECT_PREFIX + DIFFERENT_VERSION_ID + " You have a native library with a different version than expected";
+
+   public final static void incompatibleNativeLibrary() {
+       warn(DIFFERENT_VERSION);
+   }
+
+   public final static void info(String message) {
+      loggerCallback.info(message);
+   }
+
+   public final static void warn(String message) {
+      loggerCallback.warn(message);
+   }
+
+   public final static void warn(String message, Throwable e) {
+      loggerCallback.warn(message, e);
+   }
+
+   public final static void debug(String message) {
+      loggerCallback.debug(message);
+   }
+
+   public final static void debug(String message, Throwable e) {
+      loggerCallback.debug(message, e);
+   }
 }

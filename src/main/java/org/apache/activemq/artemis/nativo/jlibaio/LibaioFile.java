@@ -120,7 +120,7 @@ public final class LibaioFile<Callback extends SubmitInfo> implements AutoClosea
       try {
          LibaioContext.fill(fd, alignment, size);
       } catch (OutOfMemoryError e) {
-         NativeLogger.LOGGER.debug("Didn't have enough memory to allocate " + size + " bytes in memory, using simple fallocate");
+         NativeLogger.warn("Did not have enough memory to allocate " + size + " bytes in memory while filling the file, using simple fallocate");
          LibaioContext.fallocate(fd, size);
       }
    }
