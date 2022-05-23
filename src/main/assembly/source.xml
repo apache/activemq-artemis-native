@@ -32,11 +32,13 @@
       <!--  main project directory structure  -->
       <fileSet>
          <directory>${activemq.basedir}</directory>
-         <outputDirectory>/</outputDirectory>
+         <outputDirectory>${file.separator}</outputDirectory>
          <useDefaultExcludes>true</useDefaultExcludes>
-         <!-- TODO These excludes were lifted from maven-resources-apache-source-release-assembly-descriptor-1.0.4. We
-         should use this descriptor directly in future -->
+         <directoryMode>0755</directoryMode>
+         <fileMode>0644</fileMode>
          <excludes>
+            <!-- Scripts handled later -->
+            <exclude>scripts/*.sh</exclude>
 
             <!-- Removing ide files -->
             <exclude>etc/ide-settings/</exclude>
@@ -119,6 +121,16 @@
             </exclude>
 
          </excludes>
+      </fileSet>
+      <fileSet>
+         <directory>${activemq.basedir}</directory>
+         <outputDirectory>${file.separator}</outputDirectory>
+         <useDefaultExcludes>true</useDefaultExcludes>
+         <directoryMode>0755</directoryMode>
+         <fileMode>0755</fileMode>
+         <includes>
+            <include>scripts/*.sh</include>
+         </includes>
       </fileSet>
    </fileSets>
 </assembly>

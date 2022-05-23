@@ -17,13 +17,17 @@
 
 # ActiveMQ Artemis
 
-FROM centos:6 as builder-env
+FROM centos:7 as builder-env
 
 LABEL maintainer="Apache ActiveMQ Team"
 
 RUN yum groupinstall -y "Development Tools" && \
 	yum install -y vim cmake libaio libaio.i686 libaio-devel libaio-devel.i686 glibc-devel.i686 \
 		libgcc.i686 java-1.8.0-openjdk-devel && yum clean all
+
+WORKDIR /opt
+RUN curl https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | tar -xz
+RUN echo 'PATH=/opt/apache-maven-3.6.3/bin/:$PATH' >> ~/.bashrc
 
 FROM builder-env as builder
 
@@ -36,4 +40,6 @@ VOLUME ["/root/.m2/repository"]
 
 WORKDIR /work
 
-CMD [ "sh", "-c", "/work/scripts/compile-native.sh"]
+ENV PATH /opt/apache-maven-3.6.3/bin/:$PATH
+
+CMD [ "bash", "-c", "/work/scripts/compile-native.sh"]

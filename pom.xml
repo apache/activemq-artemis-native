@@ -32,24 +32,24 @@
     <name>ActiveMQ Artemis Native</name>
     <url />
 
-    <prerequisites>
-        <maven>3.1.0</maven>
-    </prerequisites>
-
     <properties>
         <jboss.logging.version>3.3.1.Final</jboss.logging.version>
         <jb.logmanager.version>2.0.3.Final</jb.logmanager.version>
 
-        <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
-        <version.org.jacoco>0.7.9</version.org.jacoco>
-        <version.org.jacoco.plugin>0.7.9</version.org.jacoco.plugin>
-        <version.maven.jar.plugin>2.4</version.maven.jar.plugin>
+        <version.org.jacoco>0.8.6</version.org.jacoco>
+        <version.org.jacoco.plugin>0.8.6</version.org.jacoco.plugin>
+        <surefire.version>2.22.2</surefire.version>
+        <junit.version>4.13.2</junit.version>
+        <maven.bundle.plugin.version>5.1.2</maven.bundle.plugin.version>
+        <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+        <maven-enforcer-plugin.version>3.0.0</maven-enforcer-plugin.version>
 
         <test.stress.time>5000</test.stress.time>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <!-- See also maven.compiler.release in the java9on profile -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
@@ -57,22 +57,20 @@
             -Dtest.stress.time=${test.stress.time} -Djava.library.path="${activemq.basedir}/target/lib/linux-${os.arch}"
         </activemq-surefire-argline>
         <activemq.basedir>${project.basedir}</activemq.basedir>
-        <skipLicenseCheck>true</skipLicenseCheck>
-        <skipStyleCheck>true</skipStyleCheck>
-
-        <javac-compiler-id>javac-with-errorprone</javac-compiler-id>
 
         <!-- Ignore failed tests by default because there are "known" failures in the full test-suite.
              This will be set to false for the "fast-tests" profile as none of those tests should fail. -->
         <testFailureIgnore>true</testFailureIgnore>
+
+        <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
     </properties>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis-native.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis-native.git</developerConnection>
-        <url>https://fisheye6.atlassian.com/browse/~br=master/activemq-artemis-git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <url>https://github.com/apache/activemq-artemis-native</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <distributionManagement>
         <site>
@@ -82,12 +80,6 @@
             <url>${staging.siteURL}/maven/${project.version}</url>
             <!--<url>${site-repo-url}</url>-->
         </site>
-        <snapshotRepository>
-            <id>apache.snapshots.https</id>
-            <name>Apache Development Snapshot Repository</name>
-            <url>https://repository.apache.org/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
     </distributionManagement>
 
     <issueManagement>
@@ -96,14 +88,13 @@
     </issueManagement>
 
     <dependencies>
-        <!-- ## Test Dependencies ## Note: Junit is required in certain module tests.  We should control versions from here. -->
+        <!-- ## Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
-            <!-- License: CPL 1.0 -->
-            <!-- There are newer versions of the JUnit but they break our tests -->
+            <!-- License: EPL 1.0 -->
         </dependency>
        <dependency>
           <groupId>org.jacoco</groupId>
@@ -159,13 +150,11 @@
         </profile>
         <profile>
             <id>bare-metal</id>
-
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>build</id>
@@ -185,13 +174,11 @@
         </profile>
         <profile>
             <id>docker</id>
-
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
                         <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>build</id>
@@ -211,29 +198,55 @@
         </profile>
         <profile>
             <id>release</id>
-            <properties>
-                <skipStyleCheck>false</skipStyleCheck>
-                <skipLicenseCheck>false</skipLicenseCheck>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>1.4</version>
+                        <groupId>org.apache.rat</groupId>
+                        <artifactId>apache-rat-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>enforce-java</id>
+                                <phase>compile</phase>
                                 <goals>
-                                    <goal>enforce</goal>
+                                    <goal>check</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.rat</groupId>
+                        <artifactId>apache-rat-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Override the apache-release profile from the parent to skip creating
+             a source-release archive assembly, it is handled elsewhere. -->
+        <profile>
+            <id>apache-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>source-release-assembly</id>
                                 <configuration>
-                                    <rules>
-                                        <!-- we need java8 when building the release -->
-                                        <requireJavaVersion>
-                                            <version>1.8.0</version>
-                                        </requireJavaVersion>
-                                    </rules>
+                                    <skipAssembly>true</skipAssembly>
                                 </configuration>
                             </execution>
                         </executions>
@@ -241,29 +254,143 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>java9on</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.release>8</maven.compiler.release>
+            </properties>
+        </profile>
     </profiles>
+
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.18.1</version>
                     <configuration>
                         <forkMode>once</forkMode>
                         <testFailureIgnore>${testFailureIgnore}</testFailureIgnore>
                         <runOrder>alphabetical</runOrder>
-                        <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                        <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <argLine>${activemq-surefire-argline}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.4</version>
                     <configuration>
                         <createChecksum>true</createChecksum>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <extensions>true</extensions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${exec-maven-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <configuration>
+                        <reportFile>${activemq.basedir}/ratReport.txt</reportFile>
+                        <excludes>
+                            <exclude>.travis.yml</exclude>
+                            <exclude>**/footer.html</exclude>
+                            <exclude>**/*.txt</exclude>
+                            <exclude>**/*.md</exclude>
+                            <exclude>etc/ide-settings/**</exclude>
+                            <exclude>docs/**/*.json</exclude>
+                            <exclude>docs/**/_book/</exclude>
+                            <exclude>**/target/</exclude>
+                            <exclude>**/META-INF/services/*</exclude>
+                            <exclude>**/META-INF/MANIFEST.MF</exclude>
+                            <exclude>**/*.iml</exclude>
+                            <exclude>**/*.jceks</exclude>
+                            <exclude>**/*.jks</exclude>
+                            <exclude>**/xml.xsd</exclude>
+                            <exclude>**/org/apache/activemq/artemis/utils/json/**</exclude>
+                            <exclude>**/org/apache/activemq/artemis/utils/Base64.java</exclude>
+                            <exclude>**/.settings/**</exclude>
+                            <exclude>**/.project</exclude>
+                            <exclude>**/.classpath</exclude>
+                            <exclude>**/.editorconfig</exclude>
+                            <exclude>**/.checkstyle</exclude>
+                            <exclude>**/.factorypath</exclude>
+                            <exclude>**/org.apache.activemq.artemis.cfg</exclude>
+                            <exclude>**/nb-configuration.xml</exclude>
+                            <!-- activemq5 unit tests exclude -->
+                            <exclude>**/*.data</exclude>
+                            <exclude>**/*.bin</exclude>
+                            <exclude>**/src/test/resources/keystore</exclude>
+                            <exclude>**/*.log</exclude>
+                            <exclude>**/*.redo</exclude>
+
+                            <!-- NPM files -->
+                            <exclude>**/node/**</exclude>
+                            <exclude>**/node_modules/**</exclude>
+                            <exclude>**/package.json</exclude>
+                            <exclude>**/npm-shrinkwrap.json</exclude>
+
+                            <!-- Build time overlay folder -->
+                            <exclude>**/overlays/**</exclude>
+
+                            <!-- things from cmake on the native build -->
+                            <exclude>**/CMakeFiles/</exclude>
+                            <exclude>**/Makefile</exclude>
+                            <exclude>**/cmake_install.cmake</exclude>
+                            <exclude>artemis-libaio/src/main/c/org_apache_activemq_artemis_jlibaio_LibaioContext.h</exclude>
+                            <exclude>**/dependency-reduced-pom.xml</exclude>
+
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>enforce-java-version</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                    <version>[1.8,)</version>
+                                    <message>You must use Java 8+ to build</message>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>enforce-maven-version</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                    <version>3.5.0</version>
+                                    <message>You must use Maven 3.5.0+ to build</message>
+                                    </requireMavenVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -282,75 +409,8 @@
                 <version>2.2</version>
             </plugin>
             <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <version>0.12</version>
-                <configuration>
-                    <reportFile>${activemq.basedir}/ratReport.txt</reportFile>
-                    <skip>${skipLicenseCheck}</skip>
-                    <excludes>
-                        <exclude>.travis.yml</exclude>
-                        <exclude>**/footer.html</exclude>
-                        <exclude>**/*.txt</exclude>
-                        <exclude>**/*.md</exclude>
-                        <exclude>etc/ide-settings/**</exclude>
-                        <exclude>docs/**/*.json</exclude>
-                        <exclude>docs/**/_book/</exclude>
-                        <exclude>**/target/</exclude>
-                        <exclude>**/META-INF/services/*</exclude>
-                        <exclude>**/META-INF/MANIFEST.MF</exclude>
-                        <exclude>**/*.iml</exclude>
-                        <exclude>**/*.jceks</exclude>
-                        <exclude>**/*.jks</exclude>
-                        <exclude>**/xml.xsd</exclude>
-                        <exclude>**/org/apache/activemq/artemis/utils/json/**</exclude>
-                        <exclude>**/org/apache/activemq/artemis/utils/Base64.java</exclude>
-                        <exclude>**/.settings/**</exclude>
-                        <exclude>**/.project</exclude>
-                        <exclude>**/.classpath</exclude>
-                        <exclude>**/.editorconfig</exclude>
-                        <exclude>**/.checkstyle</exclude>
-                        <exclude>**/.factorypath</exclude>
-                        <exclude>**/org.apache.activemq.artemis.cfg</exclude>
-                        <exclude>**/nb-configuration.xml</exclude>
-                        <!-- activemq5 unit tests exclude -->
-                        <exclude>**/*.data</exclude>
-                        <exclude>**/*.bin</exclude>
-                        <exclude>**/src/test/resources/keystore</exclude>
-                        <exclude>**/*.log</exclude>
-                        <exclude>**/*.redo</exclude>
-
-                        <!-- NPM files -->
-                        <exclude>**/node/**</exclude>
-                        <exclude>**/node_modules/**</exclude>
-                        <exclude>**/package.json</exclude>
-                        <exclude>**/npm-shrinkwrap.json</exclude>
-
-                        <!-- Build time overlay folder -->
-                        <exclude>**/overlays/**</exclude>
-
-                        <!-- things from cmake on the native build -->
-                        <exclude>**/CMakeFiles/</exclude>
-                        <exclude>**/Makefile</exclude>
-                        <exclude>**/cmake_install.cmake</exclude>
-                        <exclude>artemis-libaio/src/main/c/org_apache_activemq_artemis_jlibaio_LibaioContext.h</exclude>
-                        <exclude>**/dependency-reduced-pom.xml</exclude>
-
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.0.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -363,7 +423,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${version.maven.jar.plugin}</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -473,12 +532,13 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven.assembly.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>source</id>
                         <configuration>
-                            <descriptor>src/main/assembly/source.xml</descriptor>
+                            <descriptors>
+                               <descriptor>src/main/assembly/source.xml</descriptor>
+                            </descriptors>
                             <tarLongFileMode>gnu</tarLongFileMode>
                         </configuration>
                         <phase>package</phase>
@@ -494,21 +554,8 @@
     <reporting>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.5.2</version>
-                <configuration>
-                    <check />
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>1024m</maxmemory>

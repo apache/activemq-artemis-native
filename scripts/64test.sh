@@ -16,12 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# This will generate a 32bit image for testing and start the shell
+# This will generate a 64bit image for testing and start the shell
 
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 
 # This is mapping your maven repository inside the image to avoid you downloading the internet again
-docker run -it --rm -v $PWD/target/lib:/work/target/lib -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder ./mvnw test
+docker run -it --rm -v $PWD/target/lib:/work/target/lib -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder mvn test
+#podman run -it --rm -v $PWD/target/lib:/work/target/lib:Z -v $HOME/.m2/repository/:/root/.m2/repository:Z artemis-native-builder mvn test
 
 # you could use it this way
 #docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -it --rm -v $PWD/target/lib:/work/target/lib -v $HOME/.m2/repository/:/root/.m2/repository artemis-native-builder bash

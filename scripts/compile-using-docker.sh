@@ -16,10 +16,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-if [ -d "./bin" ]; then rm -Rf ./bin; fi
+if [ -d "./target" ]; then
+  if [ -d "./target/lib" ]; then
+     rm -rf "./target/lib"
+  fi
+  mkdir "target/lib"
+else
+  mkdir -p "target/lib"
+fi
+
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 docker run --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder "$@"
-chown -Rv $USER:$GID ./bin
+#podman run --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@"
+chown -Rv $USER:$GID ./target/lib
 ls -liat ./target/lib
 
 # Note: You may need to authorize docker to map folder at your folder structure
