@@ -13,16 +13,22 @@ There are two ways to build the native libraries:
 - Using a Docker Image created during the build phase
 - Bare Metal
 
-## Docker
+## Docker and Podman
 
-The only requirement needed for this compilation option is Docker.
+You an use either Docker or Podman to compile the native bits.
 
-The required image will be downloaded by Docker when you build it.
+The required image will be downloaded when you build it.
 
 You can use the script ./scripts/compile-using-docker.sh and the correct image and script should be called.
 
 ```bash
 $ ./scripts/compile-using-docker.sh
+```
+
+or
+
+```bash
+$ ./scripts/compile-using-podman.sh
 ```
 
 
@@ -31,6 +37,14 @@ Or you could also using the -Pdocker profile on maven:
 
 ```bash
 $ mvn install -Pdocker
+
+```
+
+Or you could also using the -Ppodman profile on maven:
+
+
+```bash
+$ mvn install -Ppodman
 
 ```
 
