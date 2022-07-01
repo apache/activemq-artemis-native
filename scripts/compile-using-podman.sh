@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -5,9 +6,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-#
+# 
 #   http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -15,31 +16,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# ActiveMQ Artemis
+if [ -d "./target" ]; then
+  if [ -d "./target/lib" ]; then
+     rm -rf "./target/lib"
+  fi
+  mkdir "target/lib"
+else
+  mkdir -p "target/lib"
+fi
 
-FROM centos:7 as builder-env
+podman build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
+podman run --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@"
+# to debug the image
+#podman run -it --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@" bash
+chown -Rv $USER:$GID ./target/lib
+ls -liat ./target/lib
 
-LABEL maintainer="Apache ActiveMQ Team"
-
-RUN yum groupinstall -y "Development Tools" && \
-	yum install -y vim cmake libaio libaio.i686 libaio-devel libaio-devel.i686 glibc-devel.i686 \
-		libgcc.i686 java-11-openjdk-devel && yum clean all
-
-WORKDIR /opt
-RUN curl https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | tar -xz
-RUN echo 'PATH=/opt/apache-maven-3.6.3/bin/:$PATH' >> ~/.bashrc
-
-FROM builder-env as builder
-
-ADD . /work
-
-WORKDIR /work
-
-VOLUME ["/work/target/lib"]
-VOLUME ["/root/.m2/repository"]
-
-WORKDIR /work
-
-ENV PATH /opt/apache-maven-3.6.3/bin/:$PATH
-
-CMD [ "bash", "-c", "/work/scripts/compile-native.sh"]
