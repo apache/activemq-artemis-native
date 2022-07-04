@@ -33,9 +33,6 @@
     <url />
 
     <properties>
-        <slf4j.version>1.7.36</slf4j.version>
-        <log4j.version>2.17.2</log4j.version>
-
         <version.org.jacoco>0.8.6</version.org.jacoco>
         <version.org.jacoco.plugin>0.8.6</version.org.jacoco.plugin>
         <surefire.version>2.22.2</surefire.version>
@@ -49,9 +46,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- See also maven.compiler.release in the java9on profile -->
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
 
         <activemq-surefire-argline>
             -Dtest.stress.time=${test.stress.time} -Djava.library.path="${activemq.basedir}/target/lib/linux-${os.arch}"
@@ -353,8 +350,8 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                    <version>[1.8,)</version>
-                                    <message>You must use Java 8+ to build</message>
+                                    <version>[11,)</version>
+                                    <message>You must use Java 11+ to build</message>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
