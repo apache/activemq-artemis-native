@@ -55,7 +55,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
    /**
     * The Native layer will look at this version.
     */
-   private static final int EXPECTED_NATIVE_VERSION = 11;
+   private static final int EXPECTED_NATIVE_VERSION = 200;
 
    private static boolean loaded = false;
 

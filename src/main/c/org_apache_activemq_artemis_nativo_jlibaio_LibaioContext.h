@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 #undef org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION
-#define org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION 11L
+#define org_apache_activemq_artemis_nativo_jlibaio_LibaioContext_EXPECTED_NATIVE_VERSION 200L
 /*
  * Class:     org_apache_activemq_artemis_nativo_jlibaio_LibaioContext
  * Method:    shutdownHook
