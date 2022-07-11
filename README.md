@@ -110,13 +110,13 @@ From the project base directory, run:
 ```docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder . && docker run -v $PWD/target/lib:/work/target/lib artemis-native-builder && sudo chown -Rv $USER:$GID target/lib```
 
 
-## Steps to build (manual)
+## Steps to build it manually
 
 1. Make sure you have JAVA_HOME defined, and pointing to the root of your JDK:
 
 Example:
 
-```export JAVA_HOME=/usr/share/jdk1.8```
+```export JAVA_HOME=/usr/share/jdk11```
 
 
 2. Call compile-native.sh. Bootstrap will call all the initial scripts you need
