@@ -44,6 +44,9 @@ import org.slf4j.LoggerFactory;
  * <a href="https://ext4.wiki.kernel.org/index.php/Clarifying_Direct_IO's_Semantics">Interesting reading for this.</a>
  */
 public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
+   /* Notice: After making changes to the native interface, you have to use mvn install at least once to generate the include file.
+      This is because the maven compiler plugin is the one generating org_apache_activemq_artemis_native_jlibaio_LibaioContext.h
+      So that file needs to be updated before Cmake comes along to compile the module. */
 
    private static final Logger logger = LoggerFactory.getLogger(LibaioContext.class);
 
