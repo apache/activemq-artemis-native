@@ -30,8 +30,12 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OpenCloseContextTest {
+
+   Logger logger = LoggerFactory.getLogger(OpenCloseContextTest.class);
 
    @BeforeClass
    public static void testAIO() {
@@ -52,7 +56,7 @@ public class OpenCloseContextTest {
          buffer.put((byte) 'x');
 
       for (int i = 0; i < 10; i++) {
-         System.out.println("#test " + i);
+         logger.debug("#test " + i);
          final LibaioContext control = new LibaioContext<>(5, true, true);
          Thread t = new Thread() {
             @Override
@@ -79,7 +83,7 @@ public class OpenCloseContextTest {
                } catch (Throwable e) {
                   e.printStackTrace();
                }
-               System.out.println("done");
+               logger.debug("done");
             }
          });
 
@@ -110,7 +114,7 @@ public class OpenCloseContextTest {
          buffer.put((byte) 'x');
 
       for (int i = 0; i < 10; i++) {
-         System.out.println("#test " + i);
+         logger.debug("#test " + i);
          final LibaioContext control = new LibaioContext<>(5, true, true);
          Thread t = new Thread() {
             @Override
@@ -137,7 +141,7 @@ public class OpenCloseContextTest {
                } catch (Throwable e) {
                   e.printStackTrace();
                }
-               System.out.println("done");
+               logger.debug("done");
             }
          });
 
@@ -172,8 +176,6 @@ public class OpenCloseContextTest {
 
       control2.close();
       control2.poll();
-
-      System.out.println("Hello!!");
    }
 
 }

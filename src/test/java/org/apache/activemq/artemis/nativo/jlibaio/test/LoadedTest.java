@@ -19,12 +19,16 @@ package org.apache.activemq.artemis.nativo.jlibaio.test;
 
 import org.apache.activemq.artemis.nativo.jlibaio.LibaioContext;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 public class LoadedTest {
+   private static final String OS = System.getProperty("os.name").toLowerCase();
+   private static final boolean IS_LINUX = OS.startsWith("linux");
 
    @Test
    public void testValidateIsLoaded() {
+      Assume.assumeTrue(IS_LINUX);
       Assert.assertTrue(LibaioContext.isLoaded());
    }
 

@@ -33,6 +33,7 @@
     <url />
 
     <properties>
+        <slf4j.version>1.7.36</slf4j.version>
         <version.org.jacoco>0.8.6</version.org.jacoco>
         <version.org.jacoco.plugin>0.8.6</version.org.jacoco.plugin>
         <surefire.version>2.22.2</surefire.version>
@@ -104,6 +105,19 @@
           <version>${version.org.jacoco}</version>
            <scope>test</scope>
        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <!-- License: MIT -->
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+            <!-- License: MIT -->
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -267,6 +281,9 @@
                         <runOrder>alphabetical</runOrder>
                         <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <argLine>${activemq-surefire-argline}</argLine>
+                        <systemPropertyVariables>
+                            <org.slf4j.simpleLogger.defaultLogLevel>TRACE</org.slf4j.simpleLogger.defaultLogLevel>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>

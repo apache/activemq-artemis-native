@@ -30,9 +30,12 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This test is using a different package from {@link LibaioFile}
@@ -40,10 +43,17 @@ import org.junit.rules.TemporaryFolder;
  */
 public class LibaioStressTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(LibaioStressTest.class);
+
     private static final int STRESS_TIME = Integer.parseInt(System.getProperty("test.stress.time", "5000"));
 
     static {
-        System.out.println("LibaioStressTest:: -Dtest.stress.time=" + STRESS_TIME);
+        logger.debug("LibaioStressTest:: -Dtest.stress.time=" + STRESS_TIME);
+    }
+
+    @BeforeClass
+    public static void testAssume() {
+        Assume.assumeTrue(LibaioContext.isLoaded());
     }
 
     /**
@@ -231,7 +241,7 @@ public class LibaioStressTest {
             }
 
             if (count % (sleeps ? 1_000 : 100_000) == 0) {
-                System.out.println("Writen "  + count + " buffers at " + fileName);
+                logger.debug("Writen "  + count + " buffers at " + fileName);
             }
             MyClass myClass = callbackCache.get();
 

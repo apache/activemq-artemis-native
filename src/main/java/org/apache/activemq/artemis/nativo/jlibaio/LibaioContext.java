@@ -26,6 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is used as an aggregator for the {@link LibaioFile}.
  * <br>
@@ -41,6 +44,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * <a href="https://ext4.wiki.kernel.org/index.php/Clarifying_Direct_IO's_Semantics">Interesting reading for this.</a>
  */
 public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
+
+   private static final Logger logger = LoggerFactory.getLogger(LibaioContext.class);
 
    private static final AtomicLong totalMaxIO = new AtomicLong(0);
 
@@ -61,6 +66,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
 
    private static boolean loadLibrary(final String name) {
       try {
+         logger.debug("Loading {}", name);
          System.loadLibrary(name);
          if (getNativeVersion() != EXPECTED_NATIVE_VERSION) {
             NativeLogger.incompatibleNativeLibrary();
@@ -69,7 +75,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             return true;
          }
       } catch (Throwable e) {
-         NativeLogger.debug(name + " -> error loading the native library", e);
+         logger.debug(name + " -> not possible to load native library", e);
          return false;
       }
 
@@ -93,12 +99,12 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             });
             break;
          } else {
-            NativeLogger.debug("Library " + library + " not found!");
+            logger.debug("Library {} not found!", library);
          }
       }
 
       if (!loaded) {
-         NativeLogger.debug("Couldn't locate LibAIO Wrapper");
+         logger.debug("Couldn't locate LibAIO Wrapper");
       }
    }
 
@@ -242,7 +248,7 @@ public class LibaioContext<Callback extends SubmitInfo> implements Closeable {
             try {
                ioSpace.tryAcquire(queueSize, 10, TimeUnit.SECONDS);
             } catch (Exception e) {
-               NativeLogger.warn(e.getMessage(), e);
+               logger.warn(e.getMessage(), e);
             }
          }
          totalMaxIO.addAndGet(-queueSize);

@@ -37,12 +37,15 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This test is using a different package from {@link LibaioFile}
  * as I need to validate public methods on the API
  */
 public class LibaioTest {
+   private static final Logger logger = LoggerFactory.getLogger(LibaioTest.class);
 
    @BeforeClass
    public static void testAIO() {
@@ -174,8 +177,8 @@ public class LibaioTest {
       Assert.assertEquals(fileDescriptor[0].getBlockSize(), fileDescriptor[1].getBlockSize());
       Assert.assertEquals(LibaioContext.getBlockSize(temporaryFolder.getRoot()), LibaioContext.getBlockSize(file1));
       Assert.assertEquals(LibaioContext.getBlockSize(file1), LibaioContext.getBlockSize(file2));
-      System.out.println("blockSize = " + fileDescriptor[0].getBlockSize());
-      System.out.println("blockSize /tmp= " + LibaioContext.getBlockSize("/tmp"));
+      logger.debug("blockSize = " + fileDescriptor[0].getBlockSize());
+      logger.debug("blockSize /tmp= " + LibaioContext.getBlockSize("/tmp"));
 
       ByteBuffer buffer = LibaioContext.newAlignedBuffer(4096, 4096);
 
@@ -302,7 +305,7 @@ public class LibaioTest {
          fileDescriptor.write(0, BUFFER_SIZE, buffer, callback);
 
          int retValue = control.poll(callbacks, 1, LIBAIO_QUEUE_SIZE);
-         System.out.println("Return from poll::" + retValue);
+         logger.debug("Return from poll::" + retValue);
          Assert.assertEquals(1, retValue);
 
          Assert.assertSame(callback, callbacks[0]);
@@ -401,7 +404,7 @@ public class LibaioTest {
          // Error condition
          Assert.assertSame(callbacks[0], callback);
 
-         System.out.println("Error:" + callbacks[0]);
+         logger.debug("Error:" + callbacks[0]);
 
          buffer = fileDescriptor.newBuffer(4096);
          for (int i = 0; i < 4096; i++) {
@@ -682,7 +685,7 @@ public class LibaioTest {
 
       latch.await();
 
-      System.out.println("time = " + (end - start) + " writes/second=" + NUMBER_OF_BLOCKS * 1000L / (end - start));
+      logger.debug("time = " + (end - start) + " writes/second=" + NUMBER_OF_BLOCKS * 1000L / (end - start));
 
       blockedContext.close();
       t.join();
