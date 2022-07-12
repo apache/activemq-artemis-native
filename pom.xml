@@ -84,30 +84,31 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>provided</scope>
+            <!-- License: MIT -->
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
             <!-- License: EPL 1.0 -->
         </dependency>
-       <dependency>
-          <groupId>org.jacoco</groupId>
-          <artifactId>org.jacoco.ant</artifactId>
-          <version>${version.org.jacoco}</version>
-          <scope>test</scope>
-       </dependency>
-       <dependency>
-          <groupId>org.jacoco</groupId>
-          <artifactId>org.jacoco.core</artifactId>
-          <version>${version.org.jacoco}</version>
-           <scope>test</scope>
-       </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>provided</scope>
-            <!-- License: MIT -->
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.ant</artifactId>
+            <version>${version.org.jacoco}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.core</artifactId>
+            <version>${version.org.jacoco}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
