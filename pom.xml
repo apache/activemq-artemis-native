@@ -418,7 +418,7 @@
                         <configuration>
                             <compilerArgs>
                                 <arg>-h</arg>
-                                <arg>./src/main/c</arg>
+                                <arg>./target/include</arg>
                             </compilerArgs>
                         </configuration>
                     </execution>
