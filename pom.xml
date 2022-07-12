@@ -312,6 +312,7 @@
                     <configuration>
                         <reportFile>${activemq.basedir}/ratReport.txt</reportFile>
                         <excludes>
+                            <exclude>.github/workflows/*.yml</exclude>
                             <exclude>.travis.yml</exclude>
                             <exclude>**/footer.html</exclude>
                             <exclude>**/*.txt</exclude>

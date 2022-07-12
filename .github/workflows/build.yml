@@ -1,0 +1,47 @@
+name: "Build"
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    name: Test (${{ matrix.java }})
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 11, 17 ]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache Maven Local Repo
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository/
+          key: ${{ runner.os }}-mvn-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-mvn-
+
+      - name: Install JDK ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+
+      - name: Pull Base Image
+        run: |
+          docker pull centos:7
+
+      - name: RAT Check
+        run: |
+          mvn -s .github/maven-settings.xml apache-rat:check
+
+      - name: Javadoc Check
+        run: |
+          mvn -s .github/maven-settings.xml javadoc:javadoc
+
+      - name: Build and Test (-Pdocker)
+        run: |
+          mvn -s .github/maven-settings.xml verify -Pdocker
