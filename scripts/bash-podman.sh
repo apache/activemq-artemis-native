@@ -27,7 +27,14 @@ fi
 
 podman build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
 # to debug the image
-podman run -it --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@" bash
+
+if [[ $OSTYPE == 'darwin'* ]]; then
+  # for some reason the :Z is not working on mac
+  podman run -it --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder "$@" bash
+else
+  podman run -it --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@" bash
+fi
+
 chown -Rv $USER:$GID ./target/lib
 ls -liat ./target/lib
 
