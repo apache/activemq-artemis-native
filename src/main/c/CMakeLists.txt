@@ -68,9 +68,9 @@ endif()
 find_library(LIBAIO_LIB NAMES aio)
 message(STATUS "Using the following libaio library for linking: ${LIBAIO_LIB}")
 
-INCLUDE_DIRECTORIES(. ${JNI_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(. ${JNI_INCLUDE_DIRS} ../../../target/include)
 
-ADD_LIBRARY(artemis-native SHARED org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.c org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h exception_helper.h)
+ADD_LIBRARY(artemis-native SHARED org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.c exception_helper.h)
 
 target_link_libraries(artemis-native ${LIBAIO_LIB})
 
