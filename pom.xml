@@ -34,6 +34,7 @@
 
     <properties>
         <slf4j.version>1.7.36</slf4j.version>
+        <jctools.version>3.1.0</jctools.version>
         <version.org.jacoco>0.8.6</version.org.jacoco>
         <version.org.jacoco.plugin>0.8.6</version.org.jacoco.plugin>
         <surefire.version>2.22.2</surefire.version>
@@ -114,6 +115,12 @@
             <version>${slf4j.version}</version>
             <scope>test</scope>
             <!-- License: MIT -->
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <version>${jctools.version}</version>
+            <!-- License: Apache 2.0 -->
         </dependency>
     </dependencies>
 
@@ -255,7 +262,6 @@
             </build>
         </profile>
     </profiles>
-
     <build>
         <pluginManagement>
             <plugins>
