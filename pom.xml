@@ -56,10 +56,7 @@
         </activemq-surefire-argline>
         <activemq.basedir>${project.basedir}</activemq.basedir>
 
-        <!-- Ignore failed tests by default because there are "known" failures in the full test-suite.
-             This will be set to false for the "fast-tests" profile as none of those tests should fail. -->
-        <testFailureIgnore>true</testFailureIgnore>
-
+        <maven.test.failure.ignore>false</maven.test.failure.ignore>
         <maven.test.redirectTestOutputToFile>false</maven.test.redirectTestOutputToFile>
     </properties>
 
@@ -277,7 +274,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <forkMode>once</forkMode>
-                        <testFailureIgnore>${testFailureIgnore}</testFailureIgnore>
+                        <testFailureIgnore>${maven.test.failure.ignore}</testFailureIgnore>
                         <runOrder>alphabetical</runOrder>
                         <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                         <argLine>${activemq-surefire-argline}</argLine>
