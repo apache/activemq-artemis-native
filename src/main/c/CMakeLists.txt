@@ -70,14 +70,12 @@ message(STATUS "Using the following libaio library for linking: ${LIBAIO_LIB}")
 
 INCLUDE_DIRECTORIES(. ${JNI_INCLUDE_DIRS} ../../../target/include)
 
-ADD_CUSTOM_COMMAND(
-    OUTPUT org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h
-    COMMAND mvn generate-sources
-    DEPENDS ../java/org/apache/activemq/artemis/nativo/jlibaio/LibaioContext.java
-    WORKING_DIRECTORY ../../../
-)
+find_file(HAS_INCLUDE NAMES org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h PATHS ../../../target/include/)
+if(NOT HAS_INCLUDE)
+  message(FATAL_ERROR "please execute `mvn generate-sources` from the command line")
+endif()
 
-ADD_LIBRARY(artemis-native SHARED org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.c org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h exception_helper.h)
+ADD_LIBRARY(artemis-native SHARED org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.c exception_helper.h)
 
 target_link_libraries(artemis-native ${LIBAIO_LIB})
 

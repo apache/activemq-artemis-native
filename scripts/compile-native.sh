@@ -18,6 +18,8 @@
 
 # This will compile both 32 and 64 bits version
 
+# Notice compile-native.sh is called by the Dockerfile-centos image, so we cannot call maven on this script
+
 cmake -DCMAKE_VERBOSE_MAKEFILE=On -DCMAKE_USER_C_FLAGS="-m32" -DARTEMIS_CROSS_COMPILE=On -DARTEMIS_CROSS_COMPILE_ROOT_PATH=/usr/lib .
 make
 rm -rf CMakeCache.txt cmake_install.cmake
