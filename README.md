@@ -10,16 +10,31 @@ the purpose of this documentation.
 
 There are two ways to build the native libraries:
 
-- Using a Docker Image created during the build phase
+- Using a container image created during the build phase
 - Bare Metal
 
 ## Docker and Podman
 
-You an use either Docker or Podman to compile the native bits.
+You can use either Docker or Podman to compile the native bits in a container created during the build phase.
 
-The required image will be downloaded when you build it.
+You can do this using the -Pdocker profile with maven:
 
-You can use the script ./scripts/compile-using-docker.sh and the correct image and script should be called.
+```bash
+$ mvn install -Pdocker
+```
+
+Or you can use the -Ppodman profile with maven:
+
+```bash
+$ mvn install -Ppodman
+```
+
+Alternatively, you can run the related scripts directly to execute the container builds, though note you must first separately make the java compiler generate the .h header by running:
+
+```bash
+$ mvn generate-sources
+```
+Then you can use the script and the correct image and script should be called.
 
 ```bash
 $ ./scripts/compile-using-docker.sh
@@ -29,23 +44,6 @@ or
 
 ```bash
 $ ./scripts/compile-using-podman.sh
-```
-
-
-Or you could also using the -Pdocker profile on maven:
-
-
-```bash
-$ mvn install -Pdocker
-
-```
-
-Or you could also using the -Ppodman profile on maven:
-
-
-```bash
-$ mvn install -Ppodman
-
 ```
 
 
@@ -82,12 +80,19 @@ Once again using Fedora Linux as an example, it would mean that the following pa
 
 You can use the ./scripts/compile-native.sh script. This script is using cross compilation towards 64 bits and 32 bits from a Linux environment.
 
+Note you must first have the java compiler generate the .h header manually by running:
+
+```bash
+$ mvn generate-sources
+```
+
+Then call the script to compile the native libs:
+
 ```bash
 $ ./scripts/compile-native.sh
 ```
 
-
-Or you can use the bare-metal profile
+Alternatively you can just use the bare-metal profile for maven which combines both of those steps in one operation:
 
 ```bash
 $ mvn install -Pbare-metal
@@ -103,7 +108,7 @@ This is the project information:
 Git Repository:  git://git.kernel.org/pub/scm/libs/libaio/libaio.git
 Mailing List:    linux-aio@kvack.org
 
-## Steps to build (via Docker)
+## Manual steps to build (via Docker)
 
 From the project base directory, run:
 
@@ -118,8 +123,10 @@ Example:
 
 ```export JAVA_HOME=/usr/share/jdk11```
 
+2. Run mvn generate-sources to genrate the .h header file needed:
+ $>  mvn generate-sources
 
-2. Call compile-native.sh. Bootstrap will call all the initial scripts you need
+3. Call compile-native.sh. Bootstrap will call all the initial scripts you need
  $>  ./compile-native.sh
 
 if you are missing any dependencies, autoconf would tell you what you're missing.
