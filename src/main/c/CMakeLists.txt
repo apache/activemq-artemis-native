@@ -72,7 +72,7 @@ INCLUDE_DIRECTORIES(. ${JNI_INCLUDE_DIRS} ../../../target/include)
 
 ADD_CUSTOM_COMMAND(
     OUTPUT org_apache_activemq_artemis_nativo_jlibaio_LibaioContext.h
-    COMMAND ./mvnw generate-sources
+    COMMAND mvn generate-sources
     DEPENDS ../java/org/apache/activemq/artemis/nativo/jlibaio/LibaioContext.java
     WORKING_DIRECTORY ../../../
 )
