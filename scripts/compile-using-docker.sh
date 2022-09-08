@@ -25,8 +25,10 @@ else
   mkdir -p "target/lib"
 fi
 
+mvn generate-sources
+
 docker build -f src/main/docker/Dockerfile-centos -t artemis-native-builder .
-docker run --rm -v $PWD/target/lib:/work/target/lib artemis-native-builder "$@"
+docker run --rm -v $PWD/target/lib:/work/target/lib -v ~/.m2/repository/:/root/.m2/repository artemis-native-builder "$@"
 #podman run --rm -v $PWD/target/lib:/work/target/lib:Z artemis-native-builder "$@"
 chown -Rv $USER:$GID ./target/lib
 ls -liat ./target/lib
