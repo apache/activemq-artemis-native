@@ -15,7 +15,7 @@ There are two ways to build the native libraries:
 
 ## Docker and Podman
 
-You can use either Docker or Podman to compile the native bits in a container created during the build phase.
+You can use either Docker or Podman to compile the native bits in a container created during the build phase before running the tests.
 
 You can do this using the -Pdocker profile with maven:
 
@@ -29,12 +29,7 @@ Or you can use the -Ppodman profile with maven:
 $ mvn install -Ppodman
 ```
 
-Alternatively, you can run the related scripts directly to execute the container builds, though note you must first separately make the java compiler generate the .h header by running:
-
-```bash
-$ mvn generate-sources
-```
-Then you can use the script and the correct image and script should be called.
+Alternatively, you can run the related scripts directly to execute the container native compilation only:
 
 ```bash
 $ ./scripts/compile-using-docker.sh
@@ -92,7 +87,7 @@ Then call the script to compile the native libs:
 $ ./scripts/compile-native.sh
 ```
 
-Alternatively you can just use the bare-metal profile for maven which combines both of those steps in one operation:
+Alternatively you can just use the bare-metal profile for maven which combines both of those steps in one operation before running the tests:
 
 ```bash
 $ mvn install -Pbare-metal
